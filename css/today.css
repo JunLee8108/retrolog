@@ -111,7 +111,6 @@
 }
 
 .today-section-link {
-  font-family: "Space Mono", monospace;
   font-size: 11px;
   color: var(--text-secondary);
   text-decoration: none;
@@ -238,7 +237,6 @@
 }
 
 .upcoming-event-badge {
-  font-family: "Space Mono", monospace;
   font-size: 9px;
   padding: 2px 6px;
   background: var(--bg-grid);
