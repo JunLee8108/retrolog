@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Retrolog</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Space+Mono:wght@400;700&family=Noto+Sans+KR:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/todos.css" />
+    <link rel="stylesheet" href="css/calendar.css" />
+    <link rel="stylesheet" href="css/goals.css" />
+    <link rel="stylesheet" href="css/notes.css" />
+    <link rel="stylesheet" href="css/today.css" />
+    <link rel="stylesheet" href="css/settings.css" />
+    <script src="https://unpkg.com/dexie@latest/dist/dexie.js"></script>
+  </head>
+  <body>
+    <div class="app">
+      <header class="header">
+        <div class="logo">Retrolog</div>
+        <button class="theme-toggle" id="themeToggle">
+          <svg
+            class="icon-sun"
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+            />
+          </svg>
+          <svg
+            class="icon-moon"
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+            />
+          </svg>
+        </button>
+      </header>
+
+      <nav class="tab-nav">
+        <button class="tab active" data-page="today">Today</button>
+        <button class="tab" data-page="calendar">Calendar</button>
+        <button class="tab" data-page="todos">Todos</button>
+        <button class="tab" data-page="goals">Goals</button>
+        <button class="tab" data-page="notes">Notes</button>
+        <button class="tab tab-icon" data-page="settings" title="Settings">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="3"></circle>
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+            ></path>
+          </svg>
+        </button>
+      </nav>
+
+      <div class="content-area">
+        <div class="grid-pattern"></div>
+
+        <!-- Today Page -->
+        <div class="page active" id="today">
+          <div class="date-display">
+            <div class="date-main" id="todayDateMain"></div>
+            <div class="date-sub" id="todayDateSub"></div>
+          </div>
+
+          <div class="today-stats">
+            <div class="today-stat">
+              <div class="stat-circle">
+                <svg viewBox="0 0 36 36">
+                  <circle
+                    class="stat-circle-bg"
+                    cx="18"
+                    cy="18"
+                    r="15"
+                  ></circle>
+                  <circle
+                    class="stat-circle-fill red"
+                    cx="18"
+                    cy="18"
+                    r="15"
+                    stroke-dasharray="94.2"
+                    stroke-dashoffset="94.2"
+                    id="todoCircle"
+                  ></circle>
+                </svg>
+                <div class="stat-circle-text" id="todoCircleText">0%</div>
+              </div>
+              <div class="stat-info">
+                <span class="stat-info-label">오늘 할 일</span>
+                <span class="stat-info-value"
+                  ><span id="todayDone">0</span> /
+                  <span id="todayTotal">0</span> 완료</span
+                >
+              </div>
+            </div>
+            <div class="today-stat">
+              <div class="stat-circle">
+                <svg viewBox="0 0 36 36">
+                  <circle
+                    class="stat-circle-bg"
+                    cx="18"
+                    cy="18"
+                    r="15"
+                  ></circle>
+                  <circle
+                    class="stat-circle-fill blue"
+                    cx="18"
+                    cy="18"
+                    r="15"
+                    stroke-dasharray="94.2"
+                    stroke-dashoffset="94.2"
+                    id="goalCircle"
+                  ></circle>
+                </svg>
+                <div class="stat-circle-text" id="goalCircleText">0%</div>
+              </div>
+              <div class="stat-info">
+                <span class="stat-info-label">목표 달성률</span>
+                <span class="stat-info-value" id="goalProgressText"
+                  >0 / 0 마일스톤</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <div class="today-section">
+            <div class="today-section-header">
+              <h2 class="today-section-title">오늘의 할 일</h2>
+              <button class="today-section-link" data-page="todos">
+                전체 보기 →
+              </button>
+            </div>
+            <ul class="today-todo-list" id="todayTodoList"></ul>
+          </div>
+
+          <div class="today-section">
+            <div class="today-section-header">
+              <h2 class="today-section-title">다가오는 일정</h2>
+              <button class="today-section-link" data-page="calendar">
+                달력 보기 →
+              </button>
+            </div>
+            <div class="upcoming-events" id="upcomingEvents"></div>
+          </div>
+
+          <div class="today-section">
+            <div class="today-section-header">
+              <h2 class="today-section-title">진행 중인 목표</h2>
+              <button class="today-section-link" data-page="goals">
+                전체 보기 →
+              </button>
+            </div>
+            <div class="active-goals" id="activeGoals"></div>
+          </div>
+
+          <div class="today-section">
+            <div class="today-section-header">
+              <h2 class="today-section-title">최근 메모</h2>
+              <button class="today-section-link" data-page="notes">
+                전체 보기 →
+              </button>
+            </div>
+            <div class="recent-notes" id="recentNotes"></div>
+          </div>
+        </div>
+
+        <!-- Calendar Page -->
+        <div class="page" id="calendar">
+          <div class="calendar-header">
+            <button class="cal-nav-btn" id="prevMonth">‹</button>
+            <div class="date-display" style="margin-bottom: 0">
+              <div class="date-main" id="calendarTitle"></div>
+              <div class="date-sub">Calendar</div>
+            </div>
+            <button class="cal-nav-btn" id="nextMonth">›</button>
+          </div>
+          <div class="calendar-grid">
+            <div class="cal-weekdays">
+              <span class="cal-weekday sun">일</span>
+              <span class="cal-weekday">월</span>
+              <span class="cal-weekday">화</span>
+              <span class="cal-weekday">수</span>
+              <span class="cal-weekday">목</span>
+              <span class="cal-weekday">금</span>
+              <span class="cal-weekday sat">토</span>
+            </div>
+            <div class="cal-body" id="calendarDays"></div>
+          </div>
+          <div class="calendar-list" id="calendarList"></div>
+        </div>
+
+        <!-- Todos Page -->
+        <div class="page" id="todos">
+          <div class="date-display">
+            <div class="date-main">할 일 목록</div>
+            <div class="date-sub">All Todos</div>
+          </div>
+
+          <div class="todo-command-bar">
+            <span class="command-prompt">&gt;</span>
+            <input
+              type="text"
+              id="todoSearchInput"
+              class="command-input"
+              placeholder="검색..."
+            />
+            <div class="filter-dropdowns">
+              <div class="filter-dropdown">
+                <button
+                  class="filter-toggle"
+                  id="statusFilter"
+                  data-value="all"
+                >
+                  상태 <span class="filter-arrow">▼</span>
+                </button>
+                <div class="filter-menu" id="statusMenu">
+                  <div class="filter-option selected" data-value="all">
+                    전체
+                  </div>
+                  <div class="filter-option" data-value="pending">미완료</div>
+                  <div class="filter-option" data-value="done">완료</div>
+                </div>
+              </div>
+              <div class="filter-dropdown">
+                <button
+                  class="filter-toggle"
+                  id="priorityFilter"
+                  data-value="all"
+                >
+                  우선순위 <span class="filter-arrow">▼</span>
+                </button>
+                <div class="filter-menu" id="priorityMenu">
+                  <div class="filter-option selected" data-value="all">
+                    전체
+                  </div>
+                  <div class="filter-option" data-value="high">HIGH</div>
+                  <div class="filter-option" data-value="medium">MED</div>
+                  <div class="filter-option" data-value="low">LOW</div>
+                </div>
+              </div>
+              <div class="filter-dropdown">
+                <button class="filter-toggle" id="dateFilter" data-value="all">
+                  날짜 <span class="filter-arrow">▼</span>
+                </button>
+                <div class="filter-menu" id="dateMenu">
+                  <div class="filter-option selected" data-value="all">
+                    전체
+                  </div>
+                  <div class="filter-option" data-value="today">오늘</div>
+                  <div class="filter-option" data-value="week">이번주</div>
+                  <div class="filter-option" data-value="overdue">
+                    지난 할 일
+                  </div>
+                  <div class="filter-option" data-value="undated">미지정</div>
+                </div>
+              </div>
+              <button class="filter-reset" id="filterReset" title="필터 초기화">
+                ↺
+              </button>
+            </div>
+          </div>
+
+          <div class="section">
+            <h2 class="section-title">
+              전체 할 일 <span class="todo-count" id="todoCount"></span>
+            </h2>
+            <ul class="todo-list" id="allTodoList"></ul>
+            <div class="add-todo">
+              <input
+                type="text"
+                id="todoInput"
+                placeholder="새로운 할 일 입력..."
+              />
+              <input type="date" id="todoDate" class="form-input" />
+              <select id="todoPriority">
+                <option value="low">LOW</option>
+                <option value="medium">MED</option>
+                <option value="high">HIGH</option>
+              </select>
+              <!-- Recurring Dropdown -->
+              <div class="recurring-dropdown" id="recurringDropdown">
+                <button
+                  class="recurring-toggle"
+                  id="recurringToggle"
+                  type="button"
+                >
+                  <svg
+                    class="recurring-icon"
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M21 2v6h-6"></path>
+                    <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
+                    <path d="M3 22v-6h6"></path>
+                    <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
+                  </svg>
+                  반복 <span class="filter-arrow">▼</span>
+                </button>
+                <div class="recurring-menu" id="recurringMenu">
+                  <div class="recurring-option selected" data-value="none">
+                    반복 안함
+                  </div>
+                  <div class="recurring-option" data-value="daily">매일</div>
+                  <div class="recurring-option" data-value="weekly">매주</div>
+                  <div class="recurring-option" data-value="monthly">매월</div>
+                  <div class="recurring-option" data-value="yearly">매년</div>
+                  <div class="recurring-option" data-value="custom">
+                    사용자 지정
+                  </div>
+                </div>
+              </div>
+              <!-- Custom Interval (hidden by default) -->
+              <div
+                class="recurring-interval-group"
+                id="recurringIntervalGroup"
+                style="display: none"
+              >
+                <input
+                  type="number"
+                  id="recurringInterval"
+                  class="recurring-interval-input"
+                  value="1"
+                  min="1"
+                  max="99"
+                />
+                <select id="recurringCustomType" class="recurring-type-select">
+                  <option value="daily">일</option>
+                  <option value="weekly">주</option>
+                  <option value="monthly">개월</option>
+                  <option value="yearly">년</option>
+                </select>
+                <span class="recurring-interval-suffix">마다</span>
+              </div>
+              <button class="btn btn-primary" id="addTodoBtn">Add</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Goals Page -->
+        <div class="page" id="goals">
+          <div class="date-display">
+            <div class="date-main">목표</div>
+            <div class="date-sub">Goals</div>
+          </div>
+
+          <div class="goals-filter">
+            <button class="filter-btn active" data-filter="all">전체</button>
+            <button class="filter-btn" data-filter="yearly">연간</button>
+            <button class="filter-btn" data-filter="monthly">월간</button>
+            <button class="filter-btn" data-filter="weekly">주간</button>
+            <button class="btn btn-primary" id="addGoalBtn">+ 새 목표</button>
+          </div>
+
+          <div id="goalsList"></div>
+        </div>
+
+        <!-- Notes Page -->
+        <div class="page" id="notes">
+          <div class="date-display">
+            <div class="date-main">메모</div>
+            <div class="date-sub">Notes</div>
+          </div>
+
+          <div class="notes-header">
+            <div class="search-box">
+              <input
+                type="text"
+                id="noteSearchInput"
+                placeholder="메모 검색..."
+              />
+            </div>
+            <button class="add-note-btn" id="addNoteBtn">+ 새 메모 추가</button>
+          </div>
+
+          <div class="notes-grid" id="notesGrid"></div>
+        </div>
+
+        <!-- Settings Page -->
+        <div class="page" id="settings">
+          <div class="date-display">
+            <div class="date-main">설정</div>
+            <div class="date-sub">Settings</div>
+          </div>
+
+          <!-- App Settings Section -->
+          <div class="settings-section">
+            <h2 class="section-title">앱 설정</h2>
+
+            <div class="settings-card">
+              <div class="settings-card-header">
+                <span class="settings-card-icon">🏠</span>
+                <span class="settings-card-title">기본 시작 페이지</span>
+              </div>
+              <div class="settings-card-description">
+                앱을 열 때 처음 표시될 페이지를 선택하세요.
+              </div>
+              <div class="settings-select-wrapper">
+                <select class="settings-select" id="startPageSelect">
+                  <option value="today">Today - 오늘</option>
+                  <option value="calendar">Calendar - 캘린더</option>
+                  <option value="todos">Todos - 할 일</option>
+                  <option value="goals">Goals - 목표</option>
+                  <option value="notes">Notes - 메모</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Help Section -->
+          <div class="settings-section">
+            <h2 class="section-title">도움말</h2>
+
+            <div class="settings-card help-card">
+              <!-- Todos Help -->
+              <div class="help-accordion">
+                <button class="help-accordion-header" data-target="helpTodos">
+                  <span class="help-accordion-icon">📋</span>
+                  <span class="help-accordion-title">할 일 (Todos)</span>
+                  <span class="help-accordion-arrow">›</span>
+                </button>
+                <div class="help-accordion-content" id="helpTodos">
+                  <ul class="help-list">
+                    <li>
+                      <strong>캘린더 연동</strong>
+                      <p>
+                        날짜를 지정하면 캘린더에 자동 표시됩니다. 캘린더에서
+                        드래그하여 날짜를 변경할 수 있습니다.
+                      </p>
+                    </li>
+                    <li>
+                      <strong>반복 설정</strong>
+                      <p>
+                        매일/매주/매월/매년 또는 "N일마다" 같은 사용자 지정
+                        간격으로 반복할 수 있습니다.
+                      </p>
+                    </li>
+                    <li>
+                      <strong>반복 동작</strong>
+                      <p>
+                        반복 할 일을 완료하면 다음 날짜의 새 할 일이 자동으로
+                        생성됩니다.
+                      </p>
+                    </li>
+                    <li>
+                      <strong>우선순위</strong>
+                      <p>
+                        HIGH(빨강)/MED(주황)/LOW(초록) 3단계로 중요도를 구분할
+                        수 있습니다.
+                      </p>
+                    </li>
+                    <li>
+                      <strong>필터 & 검색</strong>
+                      <p>
+                        상태, 우선순위, 날짜별 필터와 텍스트 검색으로 빠르게
+                        찾을 수 있습니다.
+                      </p>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- Calendar Help -->
+              <div class="help-accordion">
+                <button
+                  class="help-accordion-header"
+                  data-target="helpCalendar"
+                >
+                  <span class="help-accordion-icon">📅</span>
+                  <span class="help-accordion-title">캘린더 (Calendar)</span>
+                  <span class="help-accordion-arrow">›</span>
+                </button>
+                <div class="help-accordion-content" id="helpCalendar">
+                  <ul class="help-list">
+                    <li>
+                      <strong>일정 추가</strong>
+                      <p>
+                        날짜를 더블클릭하면 빠르게 일정을 추가할 수 있습니다.
+                      </p>
+                    </li>
+                    <li>
+                      <strong>다일 일정</strong>
+                      <p>
+                        "하루 종일"을 체크하면 종료일을 설정하여 여러 날에 걸친
+                        일정을 만들 수 있습니다.
+                      </p>
+                    </li>
+                    <li>
+                      <strong>드래그 앤 드롭</strong>
+                      <p>
+                        일정이나 할 일을 다른 날짜로 드래그하여 쉽게 이동할 수
+                        있습니다.
+                      </p>
+                    </li>
+                    <li>
+                      <strong>키보드 단축키</strong>
+                      <p>
+                        ← → 화살표 키로 이전/다음 월로 빠르게 이동할 수
+                        있습니다.
+                      </p>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- Goals Help -->
+              <div class="help-accordion">
+                <button class="help-accordion-header" data-target="helpGoals">
+                  <span class="help-accordion-icon">🎯</span>
+                  <span class="help-accordion-title">목표 (Goals)</span>
+                  <span class="help-accordion-arrow">›</span>
+                </button>
+                <div class="help-accordion-content" id="helpGoals">
+                  <ul class="help-list">
+                    <li>
+                      <strong>기간 유형</strong>
+                      <p>연간/월간/주간 단위로 목표를 설정할 수 있습니다.</p>
+                    </li>
+                    <li>
+                      <strong>마일스톤</strong>
+                      <p>
+                        목표별로 세부 단계(마일스톤)를 추가하고 진행률을 확인할
+                        수 있습니다.
+                      </p>
+                    </li>
+                    <li>
+                      <strong>대시보드 연동</strong>
+                      <p>
+                        Today 페이지에서 진행 중인 목표와 전체 달성률을 한눈에
+                        볼 수 있습니다.
+                      </p>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- Notes Help -->
+              <div class="help-accordion">
+                <button class="help-accordion-header" data-target="helpNotes">
+                  <span class="help-accordion-icon">📝</span>
+                  <span class="help-accordion-title">메모 (Notes)</span>
+                  <span class="help-accordion-arrow">›</span>
+                </button>
+                <div class="help-accordion-content" id="helpNotes">
+                  <ul class="help-list">
+                    <li>
+                      <strong>색상 분류</strong>
+                      <p>
+                        5가지 색상(노랑/초록/파랑/분홍/보라)으로 메모를 구분할
+                        수 있습니다.
+                      </p>
+                    </li>
+                    <li>
+                      <strong>핀 고정</strong>
+                      <p>
+                        중요한 메모를 상단에 고정하여 빠르게 접근할 수 있습니다.
+                      </p>
+                    </li>
+                    <li>
+                      <strong>검색</strong>
+                      <p>
+                        제목과 내용을 동시에 검색하여 원하는 메모를 찾을 수
+                        있습니다.
+                      </p>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- Tips -->
+              <div class="help-accordion">
+                <button class="help-accordion-header" data-target="helpTips">
+                  <span class="help-accordion-icon">💡</span>
+                  <span class="help-accordion-title">추가 팁</span>
+                  <span class="help-accordion-arrow">›</span>
+                </button>
+                <div class="help-accordion-content" id="helpTips">
+                  <ul class="help-list">
+                    <li>
+                      <strong>Today 페이지</strong>
+                      <p>
+                        오늘 할 일, 다가오는 일정, 진행 중 목표, 최근 메모를
+                        한눈에 확인할 수 있습니다.
+                      </p>
+                    </li>
+                    <li>
+                      <strong>다크 모드</strong>
+                      <p>
+                        우측 상단의 해/달 버튼으로 라이트/다크 테마를 전환할 수
+                        있습니다.
+                      </p>
+                    </li>
+                    <li>
+                      <strong>데이터 백업</strong>
+                      <p>
+                        설정 > 데이터 관리에서 JSON 파일로 내보내고 가져올 수
+                        있습니다.
+                      </p>
+                    </li>
+                    <li>
+                      <strong>모바일 지원</strong>
+                      <p>
+                        캘린더는 모바일에서 리스트 형태로 표시되어 편리하게
+                        사용할 수 있습니다.
+                      </p>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Data Management Section -->
+          <div class="settings-section">
+            <h2 class="section-title">데이터 관리</h2>
+
+            <!-- Storage Usage -->
+            <div class="settings-card">
+              <div class="settings-card-header">
+                <span class="settings-card-icon">📊</span>
+                <span class="settings-card-title">저장소 사용량</span>
+              </div>
+              <div class="storage-usage">
+                <div class="storage-bar">
+                  <div class="storage-bar-fill" id="storageBarFill"></div>
+                </div>
+                <div class="storage-info" id="storageInfo">계산 중...</div>
+              </div>
+              <div class="storage-details" id="storageDetails">
+                <div class="storage-item">
+                  <span class="storage-item-label">할 일</span>
+                  <span class="storage-item-value" id="storageTodos">0개</span>
+                </div>
+                <div class="storage-item">
+                  <span class="storage-item-label">일정</span>
+                  <span class="storage-item-value" id="storageEvents">0개</span>
+                </div>
+                <div class="storage-item">
+                  <span class="storage-item-label">목표</span>
+                  <span class="storage-item-value" id="storageGoals">0개</span>
+                </div>
+                <div class="storage-item">
+                  <span class="storage-item-label">메모</span>
+                  <span class="storage-item-value" id="storageNotes">0개</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Export / Import -->
+            <div class="settings-card">
+              <div class="settings-card-header">
+                <span class="settings-card-icon">💾</span>
+                <span class="settings-card-title">백업 및 복원</span>
+              </div>
+              <div class="settings-card-description">
+                데이터를 JSON 파일로 내보내거나 가져올 수 있습니다.
+              </div>
+              <div class="settings-button-group">
+                <button class="btn settings-btn" id="exportDataBtn">
+                  <span class="btn-icon">📥</span> 데이터 내보내기
+                </button>
+                <button class="btn settings-btn" id="importDataBtn">
+                  <span class="btn-icon">📤</span> 데이터 가져오기
+                </button>
+                <input
+                  type="file"
+                  id="importFileInput"
+                  accept=".json"
+                  style="display: none"
+                />
+              </div>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="settings-card danger-zone">
+              <div class="settings-card-header">
+                <span class="settings-card-icon">⚠️</span>
+                <span class="settings-card-title">위험 영역</span>
+              </div>
+              <div class="settings-card-description">
+                이 작업은 되돌릴 수 없습니다. 모든 데이터가 영구적으로
+                삭제됩니다.
+              </div>
+              <button class="btn btn-danger" id="clearAllDataBtn">
+                모든 데이터 삭제
+              </button>
+            </div>
+          </div>
+
+          <!-- App Info Section -->
+          <div class="settings-section">
+            <h2 class="section-title">앱 정보</h2>
+
+            <div class="settings-card app-info-card">
+              <div class="app-info-header">
+                <div class="app-info-logo">📅</div>
+                <div class="app-info-title">
+                  <h3>Retrolog</h3>
+                  <span class="app-version">v1.0.0</span>
+                </div>
+              </div>
+
+              <div class="app-info-divider"></div>
+
+              <div class="app-info-section">
+                <div class="app-info-label">개발자</div>
+                <div class="app-info-value">Jeong Hyun Lee</div>
+              </div>
+
+              <div class="app-info-section">
+                <div class="app-info-label">연락처</div>
+                <a href="mailto:your-email@example.com" class="app-info-link">
+                  lejhn1@gmail.com
+                </a>
+              </div>
+
+              <div class="app-info-section">
+                <div class="app-info-label">GitHub</div>
+                <a
+                  href="https://github.com/JunLee8108"
+                  target="_blank"
+                  class="app-info-link"
+                >
+                  github.com/JunLee8108
+                </a>
+              </div>
+
+              <div class="app-info-section">
+                <div class="app-info-label">포트폴리오</div>
+                <a
+                  href="https://your-portfolio.com"
+                  target="_blank"
+                  class="app-info-link"
+                >
+                  your-portfolio.com
+                </a>
+              </div>
+
+              <div class="app-info-divider"></div>
+
+              <div class="app-info-section">
+                <div class="app-info-label">사용 라이브러리</div>
+                <ul class="app-info-libraries">
+                  <li>Dexie.js - IndexedDB Wrapper</li>
+                  <li>Google Fonts (Gowun Batang, Space Mono, Noto Sans KR)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Event Modal -->
+    <div class="modal-overlay" id="addEventModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title" id="addEventTitle">일정 추가</h3>
+          <button class="modal-close" id="closeAddModal">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">제목</label>
+            <input
+              type="text"
+              class="form-input"
+              id="eventTitleInput"
+              placeholder="일정 제목 입력..."
+            />
+          </div>
+          <div class="form-group">
+            <label class="allday-checkbox">
+              <input type="checkbox" id="eventAllDayCheckbox" />
+              <span>하루 종일</span>
+            </label>
+          </div>
+          <div class="form-row" id="eventTimeRow">
+            <div class="form-group">
+              <label class="form-label">시간</label>
+              <input type="time" class="form-input" id="eventTimeInput" />
+            </div>
+          </div>
+          <div class="form-row" id="eventEndDateRow" style="display: none">
+            <div class="form-group">
+              <label class="form-label">종료일 (선택)</label>
+              <input type="date" class="form-input" id="eventEndDateInput" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">색상</label>
+            <div class="color-options">
+              <div class="color-option red selected" data-color="red"></div>
+              <div class="color-option blue" data-color="blue"></div>
+              <div class="color-option green" data-color="green"></div>
+              <div class="color-option yellow" data-color="yellow"></div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" id="cancelAddEvent">취소</button>
+          <button class="btn btn-primary" id="saveEvent">저장</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- View Events Modal -->
+    <div class="modal-overlay" id="viewEventsModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title" id="viewEventsTitle">일정</h3>
+          <button class="modal-close" id="closeViewModal">✕</button>
+        </div>
+        <div class="modal-body" id="viewEventsList"></div>
+        <div class="modal-footer">
+          <button class="btn" id="closeViewBtn">닫기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Goal Modal -->
+    <div class="modal-overlay" id="goalModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title" id="goalModalTitle">새 목표 추가</h3>
+          <button class="modal-close" id="closeGoalModal">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">제목</label>
+            <input
+              type="text"
+              class="form-input"
+              id="goalTitleInput"
+              placeholder="목표 제목 입력..."
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">유형</label>
+            <div class="goal-type-options">
+              <div class="type-option" data-type="yearly">연간</div>
+              <div class="type-option selected" data-type="monthly">월간</div>
+              <div class="type-option" data-type="weekly">주간</div>
+            </div>
+          </div>
+          <div class="form-group" id="periodSelectGroup">
+            <label class="form-label">기간</label>
+            <div class="period-selects">
+              <select class="form-input" id="goalYearSelect"></select>
+              <select class="form-input" id="goalMonthSelect"></select>
+              <select class="form-input" id="goalWeekSelect"></select>
+            </div>
+            <div class="period-preview" id="periodPreview"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">색상</label>
+            <div class="color-options">
+              <div class="color-option red selected" data-color="red"></div>
+              <div class="color-option blue" data-color="blue"></div>
+              <div class="color-option green" data-color="green"></div>
+              <div class="color-option yellow" data-color="yellow"></div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" id="cancelGoal">취소</button>
+          <button class="btn btn-primary" id="saveGoal">저장</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Note Modal -->
+    <div class="modal-overlay" id="noteModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title" id="noteModalTitle">새 메모</h3>
+          <button class="modal-close" id="closeNoteModal">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">제목</label>
+            <input
+              type="text"
+              class="form-input"
+              id="noteTitleInput"
+              placeholder="메모 제목..."
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">내용</label>
+            <textarea
+              class="note-textarea"
+              id="noteContentInput"
+              placeholder="메모 내용을 입력하세요..."
+            ></textarea>
+          </div>
+          <div class="note-options">
+            <div class="note-colors">
+              <span class="note-colors-label">색상</span>
+              <div
+                class="note-color-option yellow selected"
+                data-color="yellow"
+              ></div>
+              <div class="note-color-option green" data-color="green"></div>
+              <div class="note-color-option blue" data-color="blue"></div>
+              <div class="note-color-option pink" data-color="pink"></div>
+              <div class="note-color-option purple" data-color="purple"></div>
+            </div>
+            <label class="pin-checkbox">
+              <input type="checkbox" id="notePinnedCheckbox" />
+              📌 상단 고정
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" id="cancelNote">취소</button>
+          <button class="btn btn-primary" id="saveNote">저장</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Todo Modal -->
+    <div class="modal-overlay" id="editTodoModal" style="z-index: 1001">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title">할 일 수정</h3>
+          <button class="modal-close" id="closeEditTodoModal">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">내용</label>
+            <input
+              type="text"
+              class="form-input"
+              id="editTodoTextInput"
+              placeholder="할 일 내용..."
+            />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">날짜</label>
+              <input type="date" class="form-input" id="editTodoDateInput" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">우선순위</label>
+              <select class="form-input" id="editTodoPriorityInput">
+                <option value="low">LOW</option>
+                <option value="medium">MED</option>
+                <option value="high">HIGH</option>
+              </select>
+            </div>
+          </div>
+          <!-- Recurring Options -->
+          <div class="form-group">
+            <label class="recurring-checkbox">
+              <input type="checkbox" id="editTodoRecurringCheckbox" />
+              <span class="recurring-checkbox-label"> 반복 </span>
+            </label>
+          </div>
+          <div
+            class="form-row edit-recurring-options"
+            id="editTodoRecurringOptions"
+            style="display: none"
+          >
+            <div class="form-group">
+              <label class="form-label">반복 주기</label>
+              <select class="form-input" id="editTodoRecurringType">
+                <option value="daily">매일</option>
+                <option value="weekly">매주</option>
+                <option value="monthly">매월</option>
+                <option value="yearly">매년</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">간격</label>
+              <input
+                type="number"
+                class="form-input"
+                id="editTodoRecurringInterval"
+                value="1"
+                min="1"
+                max="99"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" id="cancelEditTodo">취소</button>
+          <button class="btn btn-primary" id="saveEditTodo">저장</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Event Modal -->
+    <div class="modal-overlay" id="editEventModal" style="z-index: 1001">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title">일정 수정</h3>
+          <button class="modal-close" id="closeEditEventModal">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">제목</label>
+            <input
+              type="text"
+              class="form-input"
+              id="editEventTitleInput"
+              placeholder="일정 제목..."
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">날짜</label>
+            <input type="date" class="form-input" id="editEventDateInput" />
+          </div>
+          <div class="form-group">
+            <label class="allday-checkbox">
+              <input type="checkbox" id="editEventAllDayCheckbox" />
+              <span>하루 종일</span>
+            </label>
+          </div>
+          <div class="form-row" id="editEventTimeRow">
+            <div class="form-group">
+              <label class="form-label">시간</label>
+              <input type="time" class="form-input" id="editEventTimeInput" />
+            </div>
+          </div>
+          <div class="form-row" id="editEventEndDateRow" style="display: none">
+            <div class="form-group">
+              <label class="form-label">종료일 (선택)</label>
+              <input
+                type="date"
+                class="form-input"
+                id="editEventEndDateInput"
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">색상</label>
+            <div class="color-options" id="editEventColorOptions">
+              <div class="color-option red" data-color="red"></div>
+              <div class="color-option blue" data-color="blue"></div>
+              <div class="color-option green" data-color="green"></div>
+              <div class="color-option yellow" data-color="yellow"></div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" id="cancelEditEvent">취소</button>
+          <button class="btn btn-primary" id="saveEditEvent">저장</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Import Confirm Modal -->
+    <div class="modal-overlay" id="importConfirmModal" style="z-index: 1002">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title">데이터 가져오기</h3>
+          <button class="modal-close" id="closeImportModal">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="import-preview" id="importPreview">
+            <p>가져올 데이터:</p>
+            <ul id="importPreviewList"></ul>
+          </div>
+          <div class="import-options">
+            <label class="import-option">
+              <input type="radio" name="importMode" value="merge" checked />
+              <span>기존 데이터에 병합</span>
+            </label>
+            <label class="import-option">
+              <input type="radio" name="importMode" value="replace" />
+              <span>기존 데이터 덮어쓰기</span>
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" id="cancelImport">취소</button>
+          <button class="btn btn-primary" id="confirmImport">가져오기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Clear Data Confirm Modal -->
+    <div class="modal-overlay" id="clearDataModal" style="z-index: 1002">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title">⚠️ 데이터 삭제 확인</h3>
+          <button class="modal-close" id="closeClearModal">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="clear-warning">
+            <p><strong>정말로 모든 데이터를 삭제하시겠습니까?</strong></p>
+            <p>이 작업은 되돌릴 수 없습니다.</p>
+            <p>삭제될 항목:</p>
+            <ul id="clearDataList"></ul>
+          </div>
+          <div class="clear-confirm-input">
+            <label class="form-label">확인을 위해 "삭제"를 입력하세요:</label>
+            <input
+              type="text"
+              class="form-input"
+              id="clearConfirmInput"
+              placeholder="삭제"
+            />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" id="cancelClear">취소</button>
+          <button class="btn btn-danger" id="confirmClear" disabled>
+            삭제 실행
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/db.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/todos.js"></script>
+    <script src="js/calendar.js"></script>
+    <script src="js/goals.js"></script>
+    <script src="js/notes.js"></script>
+    <script src="js/today.js"></script>
+    <script src="js/settings.js"></script>
+  </body>
+</html>

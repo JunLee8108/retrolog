@@ -1,0 +1,639 @@
+/* ==================== Todos Page ==================== */
+
+/* ==================== Command Bar (Search & Filter) ==================== */
+.todo-command-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--bg-main);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+  font-family: "Space Mono", monospace;
+}
+
+.command-prompt {
+  color: var(--red);
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.command-input {
+  flex: 1;
+  min-width: 80px;
+  padding: 6px 8px;
+  border: none;
+  background: transparent;
+  font-family: "Space Mono", monospace;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.command-input:focus {
+  outline: none;
+}
+
+.command-input::placeholder {
+  color: var(--text-secondary);
+}
+
+/* Filter Dropdowns */
+.filter-dropdowns {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.filter-dropdown {
+  position: relative;
+}
+
+.filter-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  font-family: "Space Mono", monospace;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.filter-toggle:hover {
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+}
+
+.filter-toggle.active {
+  background: var(--text-primary);
+  border-color: var(--text-primary);
+  color: var(--bg-card);
+}
+
+.filter-arrow {
+  font-size: 8px;
+  transition: transform 0.15s;
+}
+
+.filter-dropdown.open .filter-arrow {
+  transform: rotate(180deg);
+}
+
+/* Filter Menu */
+.filter-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 100%;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: all 0.15s;
+}
+
+.filter-dropdown.open .filter-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.filter-option {
+  padding: 8px 12px;
+  font-family: "Space Mono", monospace;
+  font-size: 11px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.1s;
+  white-space: nowrap;
+}
+
+.filter-option:hover {
+  background: var(--bg-grid);
+  color: var(--text-primary);
+}
+
+.filter-option.selected {
+  color: var(--red);
+  font-weight: 700;
+}
+
+/* Reset Button */
+.filter-reset {
+  padding: 6px 8px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.filter-reset:hover {
+  border-color: var(--border);
+  color: var(--red);
+}
+
+/* Todo Count */
+.todo-count {
+  font-family: "Space Mono", monospace;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+/* No Results */
+.todo-no-results {
+  text-align: center;
+  padding: 40px 24px;
+  color: var(--text-secondary);
+}
+
+.todo-no-results-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+  opacity: 0.5;
+}
+
+/* ==================== Todo List ==================== */
+.todo-list {
+  list-style: none;
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px dashed var(--border);
+  transition: all 0.15s;
+}
+
+.todo-item:last-child {
+  border-bottom: none;
+}
+
+/* Checkbox */
+.checkbox {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  border: 2px solid var(--text-primary);
+  border-radius: 1px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.checkbox:hover {
+  border-color: var(--red);
+}
+
+.checkbox.checked {
+  background: var(--text-primary);
+}
+
+.checkbox.checked::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  background: var(--bg-card);
+  clip-path: polygon(20% 50%, 40% 70%, 80% 30%, 85% 35%, 40% 80%, 15% 55%);
+}
+
+/* Todo Text */
+.todo-text {
+  flex: 1;
+  font-size: 14px;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.todo-text:hover {
+  color: var(--blue);
+}
+
+.todo-item.completed .todo-text {
+  color: var(--text-secondary);
+  text-decoration: line-through;
+}
+
+.todo-item.completed .todo-text:hover {
+  color: var(--blue);
+}
+
+/* Today page todo text clickable */
+.today-todo-text {
+  flex: 1;
+  font-size: 14px;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.today-todo-text:hover {
+  color: var(--blue);
+}
+
+.today-todo-item.completed .today-todo-text {
+  text-decoration: line-through;
+  color: var(--text-secondary);
+}
+
+.today-todo-item.completed .today-todo-text:hover {
+  color: var(--blue);
+}
+
+/* Todo Recurring Icon */
+.todo-recurring {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--blue);
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+
+.todo-recurring:hover {
+  opacity: 1;
+}
+
+.todo-recurring svg {
+  width: 14px;
+  height: 14px;
+}
+
+.todo-item.completed .todo-recurring {
+  opacity: 0.3;
+}
+
+/* Todo Date Badge */
+.todo-date {
+  font-family: "Space Mono", monospace;
+  font-size: 10px;
+  color: var(--text-secondary);
+  padding: 2px 6px;
+  background: var(--bg-grid);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.todo-date.overdue {
+  background: var(--red);
+  color: white;
+}
+
+/* Priority Badge */
+.todo-priority {
+  font-family: "Space Mono", monospace;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 1px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.todo-priority.high {
+  background: var(--red);
+  color: white;
+}
+
+.todo-priority.medium {
+  background: #ed7b4a;
+  color: white;
+}
+
+.todo-priority.low {
+  background: #39c893;
+  color: white;
+}
+
+/* Delete Button */
+.delete-btn {
+  opacity: 0;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  transition: all 0.15s;
+}
+
+.todo-item:hover .delete-btn {
+  opacity: 1;
+}
+
+.delete-btn:hover {
+  color: var(--red);
+}
+
+/* ==================== Add Todo Form ==================== */
+.add-todo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+  align-items: center;
+}
+
+.add-todo input,
+.add-todo select {
+  padding: 12px 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-main);
+  border-radius: 2px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-primary);
+  transition: all 0.15s;
+}
+
+.add-todo input[type="text"] {
+  flex: 1;
+  min-width: 150px;
+}
+
+.add-todo input:focus {
+  outline: none;
+  border-color: var(--text-primary);
+}
+
+.add-todo input[type="date"] {
+  font-family: "Space Mono", monospace;
+  font-size: 11px;
+  width: auto;
+  min-width: 130px;
+}
+
+.add-todo select {
+  font-family: "Space Mono", monospace;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+/* ==================== Recurring Dropdown ==================== */
+.recurring-dropdown {
+  position: relative;
+}
+
+.recurring-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 12px;
+  background: var(--bg-main);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  font-family: "Space Mono", monospace;
+  font-size: 11px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.recurring-toggle .recurring-icon {
+  flex-shrink: 0;
+}
+
+.recurring-toggle:hover {
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+}
+
+.recurring-toggle.active {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: white;
+}
+
+.recurring-dropdown.open .filter-arrow {
+  transform: rotate(180deg);
+}
+
+.recurring-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 120px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: all 0.15s;
+}
+
+.recurring-dropdown.open .recurring-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.recurring-option {
+  padding: 10px 14px;
+  font-family: "Space Mono", monospace;
+  font-size: 11px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.1s;
+  white-space: nowrap;
+}
+
+.recurring-option:hover {
+  background: var(--bg-grid);
+  color: var(--text-primary);
+}
+
+.recurring-option.selected {
+  color: var(--blue);
+  font-weight: 700;
+}
+
+/* Custom Interval Group */
+.recurring-interval-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.recurring-interval-input {
+  width: 50px !important;
+  min-width: 50px !important;
+  padding: 12px 8px !important;
+  text-align: center;
+  font-family: "Space Mono", monospace !important;
+  font-size: 11px !important;
+}
+
+.recurring-interval-input::-webkit-inner-spin-button,
+.recurring-interval-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.recurring-type-select {
+  padding: 12px 8px !important;
+  font-family: "Space Mono", monospace !important;
+  font-size: 11px !important;
+  min-width: 60px;
+}
+
+.recurring-interval-suffix {
+  font-family: "Space Mono", monospace;
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* ==================== Edit Modal Recurring ==================== */
+.recurring-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.recurring-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-top: 1.5px;
+  cursor: pointer;
+}
+
+.recurring-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.recurring-checkbox-label svg {
+  color: var(--blue);
+}
+
+.edit-recurring-options {
+  gap: 12px;
+  padding: 12px;
+  background: var(--bg-grid);
+  border-radius: 4px;
+  margin-top: 8px;
+}
+
+.edit-recurring-options .form-group {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.edit-recurring-options .form-label {
+  font-size: 11px;
+  margin-bottom: 4px;
+}
+
+.edit-recurring-options .form-input {
+  padding: 8px 10px;
+  font-size: 12px;
+}
+
+.edit-recurring-options input[type="number"] {
+  width: 100%;
+  text-align: center;
+}
+
+.edit-recurring-options input[type="number"]::-webkit-inner-spin-button,
+.edit-recurring-options input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* ==================== Responsive ==================== */
+@media (max-width: 600px) {
+  .todo-command-bar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .command-prompt {
+    order: 0;
+  }
+
+  .filter-dropdowns {
+    order: 2;
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .filter-toggle {
+    font-size: 9px;
+    padding: 5px 8px;
+  }
+
+  .add-todo {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .add-todo input[type="text"] {
+    min-width: auto;
+  }
+
+  .add-todo input[type="date"] {
+    min-width: auto;
+  }
+
+  .recurring-dropdown {
+    width: 100%;
+  }
+
+  .recurring-toggle {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .recurring-menu {
+    width: 100%;
+  }
+
+  .recurring-interval-group {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .todo-date {
+    display: none;
+  }
+
+  .todo-recurring svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  .edit-recurring-options {
+    flex-direction: column;
+    gap: 12px;
+  }
+}

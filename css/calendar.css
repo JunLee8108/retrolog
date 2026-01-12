@@ -1,0 +1,689 @@
+/* ==================== Calendar Page ==================== */
+
+/* All Day Checkbox */
+.allday-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.allday-checkbox input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+/* Calendar Header */
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.cal-nav-btn {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 20px;
+  color: var(--text-primary);
+  transition: all 0.15s;
+}
+
+.cal-nav-btn:hover {
+  background: var(--text-primary);
+  color: var(--bg-card);
+}
+
+.cal-nav-btn.pressed {
+  background: var(--text-primary);
+  color: var(--bg-card);
+  transform: scale(0.95);
+}
+
+/* Calendar Grid */
+.calendar-grid {
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.cal-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: var(--bg-grid);
+  border-bottom: 1px solid var(--border);
+}
+
+.cal-weekday {
+  font-family: "Space Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 12px 8px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.cal-weekday.sun {
+  color: var(--red);
+}
+
+.cal-weekday.sat {
+  color: var(--blue);
+}
+
+/* Calendar Body */
+.cal-body {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Week Row */
+.cal-week-wrapper {
+  position: relative;
+}
+
+.cal-week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+/* Multi-day Events Layer */
+.multi-day-layer {
+  position: absolute;
+  top: 30px;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.multi-day-row {
+  height: 20px;
+  position: relative;
+  pointer-events: none;
+}
+
+.multi-day-bar {
+  position: absolute;
+  top: 0;
+  height: 19.9px;
+  font-size: 11px;
+  padding: 2px 6px;
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: grab;
+  pointer-events: auto;
+  border-radius: 2px;
+  line-height: 14px;
+}
+
+.multi-day-bar:hover {
+  opacity: 0.9;
+}
+
+.multi-day-bar.dragging {
+  opacity: 0.4;
+}
+
+.multi-day-bar.red {
+  background: var(--red);
+}
+
+.multi-day-bar.blue {
+  background: var(--blue);
+}
+
+.multi-day-bar.green {
+  background: var(--green);
+}
+
+.multi-day-bar.yellow {
+  background: var(--yellow);
+}
+
+/* Calendar Day Cell */
+.cal-day {
+  min-height: 100px;
+  min-width: 0;
+  padding: 6px 4.5px;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.15s;
+  display: flex;
+  flex-direction: column;
+}
+
+.cal-week .cal-day:nth-of-type(7) {
+  border-right: none;
+}
+
+.cal-day:hover {
+  background: var(--bg-grid);
+}
+
+.cal-day.other-month > .day-number {
+  opacity: 0.3;
+}
+
+.cal-day.today .day-number {
+  background: var(--blue);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cal-day.drag-over {
+  background: var(--bg-grid);
+  box-shadow: inset 0 0 0 2px var(--blue);
+}
+
+/* Day Number */
+.day-number {
+  font-family: "Space Mono", monospace;
+  font-size: 11px;
+  width: 20px;
+  height: 20px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.cal-week .cal-day:nth-of-type(7n + 1) .day-number {
+  color: var(--red);
+}
+
+.cal-week .cal-day:nth-of-type(7n) .day-number {
+  color: var(--blue);
+}
+
+.cal-week .cal-day.today .day-number {
+  color: white;
+}
+
+/* Day Events Container */
+.day-events {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Multi-day spacer (reserves space for multi-day events) */
+.multi-day-spacer {
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* Event Bar (single day) */
+.event-bar {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 2px;
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: grab;
+  position: relative;
+  z-index: 1;
+}
+
+.event-bar:hover {
+  opacity: 0.85;
+}
+
+.event-bar:active {
+  cursor: grabbing;
+}
+
+.event-bar.dragging {
+  opacity: 0.4;
+}
+
+.event-bar.red {
+  background: var(--red);
+}
+
+.event-bar.blue {
+  background: var(--blue);
+}
+
+.event-bar.green {
+  background: var(--green);
+}
+
+.event-bar.yellow {
+  background: var(--yellow);
+}
+
+/* Todo Bar in Calendar */
+.todo-bar {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 2px;
+  background: var(--bg-grid);
+  border: 1px dashed var(--border-dark);
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.todo-priority-icon {
+  color: #ff0000;
+  font-weight: 700;
+}
+
+.todo-bar:hover {
+  background: var(--bg-main);
+}
+
+.todo-bar.done {
+  opacity: 0.5;
+}
+
+.todo-bar.done .todo-bar-text {
+  text-decoration: line-through;
+}
+
+.todo-bar.dragging {
+  opacity: 0.4;
+}
+
+.todo-check {
+  font-size: 10px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.todo-check:hover {
+  color: var(--red);
+}
+
+/* More Events Link */
+.more-events {
+  font-size: 11px;
+  color: var(--text-secondary);
+  padding: 2px 4px;
+  cursor: pointer;
+}
+
+.more-events:hover {
+  color: var(--text-primary);
+}
+
+/* ==================== View Modal Extras ==================== */
+.view-section-title {
+  font-family: "Space Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px dashed var(--border);
+}
+
+.event-list-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px dashed var(--border);
+}
+
+.event-list-item:last-child,
+.event-list-item:has(+ .view-section-title) {
+  border-bottom: none;
+}
+
+.event-color-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.event-list-time {
+  font-family: "Space Mono", monospace;
+  font-size: 11px;
+  color: var(--text-secondary);
+  min-width: 50px;
+}
+
+.event-list-text {
+  flex: 1;
+  font-size: 13px;
+}
+
+.event-list-delete {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.15s;
+}
+
+.event-list-item:hover .event-list-delete {
+  opacity: 1;
+}
+
+.event-list-delete:hover {
+  color: var(--red);
+}
+
+/* Event text clickable in View Modal */
+.event-text-clickable {
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.event-text-clickable:hover {
+  color: var(--blue);
+}
+
+/* Todo List Item in View Modal */
+.todo-list-item.completed .event-list-text {
+  text-decoration: line-through;
+  color: var(--text-secondary);
+}
+
+.todo-list-checkbox {
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+  border: 2px solid var(--text-primary);
+  border-radius: 1px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.todo-list-checkbox:hover {
+  border-color: var(--red);
+}
+
+.todo-list-checkbox.checked {
+  background: var(--text-primary);
+}
+
+.todo-list-checkbox.checked::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  background: var(--bg-card);
+  clip-path: polygon(20% 50%, 40% 70%, 80% 30%, 85% 35%, 40% 80%, 15% 55%);
+}
+
+/* Todo text clickable in View Modal */
+.todo-text-clickable {
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.todo-text-clickable:hover {
+  color: var(--blue);
+}
+
+.todo-list-item.completed .todo-text-clickable {
+  text-decoration: line-through;
+  color: var(--text-secondary);
+}
+
+.todo-list-item.completed .todo-text-clickable:hover {
+  color: var(--blue);
+}
+
+/* ==================== Calendar List View (Mobile) ==================== */
+.calendar-list {
+  display: none;
+}
+
+.day-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.day-card.is-today {
+  border-color: var(--blue);
+  border-width: 2px;
+}
+
+.day-card-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px dashed var(--border);
+  gap: 12px;
+}
+
+.day-card-date {
+  font-family: "Space Mono", monospace;
+  font-size: 24px;
+  font-weight: 700;
+  min-width: 36px;
+}
+
+.day-card.is-sunday .day-card-date {
+  color: var(--red);
+}
+
+.day-card.is-saturday .day-card-date {
+  color: var(--blue);
+}
+
+.day-card-weekday {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.day-card-today-badge {
+  margin-left: auto;
+  font-family: "Space Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: var(--blue);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 2px;
+}
+
+.day-card-body {
+  padding: 12px 16px;
+}
+
+.day-card-events {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.day-card-event {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 2px;
+  font-size: 14px;
+  color: white;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.day-card-event:hover {
+  opacity: 0.9;
+}
+
+.day-card-event.red {
+  background: var(--red);
+}
+
+.day-card-event.blue {
+  background: var(--blue);
+}
+
+.day-card-event.green {
+  background: var(--green);
+}
+
+.day-card-event.yellow {
+  background: var(--yellow);
+  color: #1a1a1a;
+}
+
+.day-card-event-time {
+  font-family: "Space Mono", monospace;
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+/* Mobile Calendar - Event text clickable */
+.day-card-event-text {
+  flex: 1;
+  cursor: pointer;
+}
+
+.day-card-event-text:hover {
+  text-decoration: underline;
+}
+
+/* Mobile Calendar - Todo */
+.day-card-todo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 2px;
+  font-size: 14px;
+  background: var(--bg-grid);
+  border: 1px dashed var(--border-dark);
+}
+
+.day-card-todo.done {
+  opacity: 0.5;
+}
+
+.day-card-todo.done span:not(.day-card-todo-check):not(.todo-priority) {
+  text-decoration: line-through;
+}
+
+.day-card-todo-check {
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.day-card-todo-check:hover {
+  color: var(--red);
+}
+
+/* Todo text clickable in Mobile Calendar */
+.day-card-todo-text {
+  cursor: pointer;
+  transition: color 0.15s;
+  flex: 1;
+}
+
+.day-card-todo-text:hover {
+  color: var(--blue);
+}
+
+.day-card-todo.done .day-card-todo-text {
+  text-decoration: line-through;
+}
+
+.day-card-empty {
+  color: var(--text-secondary);
+  font-size: 13px;
+  padding: 8px 0;
+}
+
+.day-card-add {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+}
+
+.day-card-add-btn {
+  font-family: "Space Mono", monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.day-card-add-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--text-primary);
+}
+
+/* ==================== Responsive ==================== */
+@media (max-width: 768px) {
+  .calendar-grid {
+    display: none;
+  }
+
+  .calendar-list {
+    display: block;
+  }
+}
+
+@media (max-width: 600px) {
+  .cal-day {
+    min-height: 70px;
+  }
+
+  .event-bar {
+    font-size: 10px;
+    padding: 1px 4px;
+  }
+
+  .todo-bar {
+    font-size: 10px;
+    padding: 1px 4px;
+  }
+
+  .todo-check {
+    font-size: 9px;
+  }
+
+  .multi-day-bar {
+    font-size: 10px;
+    padding: 1px 4px;
+  }
+}
