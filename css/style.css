@@ -229,34 +229,6 @@ body {
   margin-right: 8px;
 }
 
-/* ==================== Stats ==================== */
-.stats {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 32px;
-}
-
-.stat-box {
-  flex: 1;
-  padding: 16px;
-  border: 1px solid var(--border);
-  border-radius: 2px;
-  text-align: center;
-}
-
-.stat-value {
-  font-family: "Space Mono", monospace;
-  font-size: 32px;
-  font-weight: 700;
-  color: var(--red);
-}
-
-.stat-label {
-  font-size: 12px;
-  color: var(--text-secondary);
-  margin-top: 4px;
-}
-
 /* ==================== Buttons ==================== */
 .btn {
   padding: 10px 16px;

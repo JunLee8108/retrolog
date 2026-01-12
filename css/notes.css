@@ -48,7 +48,6 @@
   border-radius: 2px;
   background: transparent;
   cursor: pointer;
-  font-family: "Space Mono", monospace;
   font-size: 13px;
   font-weight: 600;
   color: var(--text-secondary);
@@ -175,7 +174,6 @@
 }
 
 .note-date {
-  font-family: "Space Mono", monospace;
   font-size: 10px;
   color: #6a6a6a;
   margin-top: 12px;

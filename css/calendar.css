@@ -62,7 +62,6 @@
 }
 
 .cal-weekday {
-  font-family: "Space Mono", monospace;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -195,7 +194,6 @@
 
 /* Day Number */
 .day-number {
-  font-family: "Space Mono", monospace;
   font-size: 11px;
   width: 20px;
   height: 20px;
@@ -335,7 +333,6 @@
 
 /* ==================== View Modal Extras ==================== */
 .view-section-title {
-  font-family: "Space Mono", monospace;
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
@@ -366,7 +363,6 @@
 }
 
 .event-list-time {
-  font-family: "Space Mono", monospace;
   font-size: 11px;
   color: var(--text-secondary);
   min-width: 50px;
@@ -486,7 +482,6 @@
 }
 
 .day-card-date {
-  font-family: "Space Mono", monospace;
   font-size: 24px;
   font-weight: 700;
   min-width: 36px;
@@ -507,7 +502,6 @@
 
 .day-card-today-badge {
   margin-left: auto;
-  font-family: "Space Mono", monospace;
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
@@ -561,7 +555,6 @@
 }
 
 .day-card-event-time {
-  font-family: "Space Mono", monospace;
   font-size: 12px;
   opacity: 0.9;
 }
@@ -635,7 +628,6 @@
 }
 
 .day-card-add-btn {
-  font-family: "Space Mono", monospace;
   font-size: 11px;
   font-weight: 600;
   color: var(--text-secondary);
