@@ -25,7 +25,6 @@
   padding: 6px 8px;
   border: none;
   background: transparent;
-  font-family: "Space Mono", monospace;
   font-size: 13px;
   color: var(--text-primary);
 }
@@ -256,7 +255,7 @@
 .checkbox {
   width: 18px;
   height: 18px;
-  margin-top: 2px;
+  margin-top: 1px;
   border: 2px solid var(--text-primary);
   border-radius: 1px;
   cursor: pointer;
@@ -277,8 +276,8 @@
 
 .checkbox.checked::after {
   content: "";
-  width: 10px;
-  height: 10px;
+  width: 13px;
+  height: 13px;
   background: var(--bg-card);
   clip-path: polygon(20% 50%, 40% 70%, 80% 30%, 85% 35%, 40% 80%, 15% 55%);
 }
@@ -286,7 +285,7 @@
 /* Todo Text */
 .todo-text {
   flex: 1;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
   transition: color 0.15s;
 }
@@ -495,14 +494,12 @@
 }
 
 .add-todo input[type="date"] {
-  font-family: "Space Mono", monospace;
   font-size: 11px;
   width: auto;
   min-width: 130px;
 }
 
 .add-todo select {
-  font-family: "Space Mono", monospace;
   font-size: 11px;
   cursor: pointer;
 }
