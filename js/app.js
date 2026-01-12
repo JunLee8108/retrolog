@@ -63,6 +63,8 @@ function initTabs() {
         if (p.id === tab.dataset.page) p.classList.add("active");
       });
 
+      window.scrollTo({ top: 0, behavior: "instant" });
+
       // Refresh Today page when switching to it
       if (
         tab.dataset.page === "today" &&

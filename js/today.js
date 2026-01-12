@@ -30,6 +30,8 @@ function bindTodaySectionLinks() {
         .querySelectorAll(".page")
         .forEach((p) => p.classList.remove("active"));
       document.getElementById(targetPage).classList.add("active");
+
+      window.scrollTo({ top: 0, behavior: "instant" });
     });
   });
 }
@@ -169,6 +171,8 @@ function bindTodayTodoEvents() {
           .querySelectorAll(".page")
           .forEach((p) => p.classList.remove("active"));
         document.getElementById("todos").classList.add("active");
+
+        window.scrollTo({ top: 0, behavior: "instant" });
       });
     });
 }
@@ -254,6 +258,7 @@ async function renderUpcomingEvents() {
 }
 
 // ==================== Render Active Goals ====================
+// ==================== Render Active Goals ====================
 async function renderActiveGoals() {
   const container = document.getElementById("activeGoals");
   const allGoals = await GoalsDB.getAll();
@@ -307,9 +312,19 @@ async function renderActiveGoals() {
     })
     .join("");
 
-  // Bind click to go to goals page
+  // Bind click to go to goals page and scroll to target
   container.querySelectorAll(".active-goal-card").forEach((card) => {
-    card.onclick = () => {
+    card.onclick = async () => {
+      const goalId = card.dataset.id;
+
+      // 1. 필터를 "전체"로 리셋
+      currentFilter = "all";
+      document.querySelectorAll(".filter-btn").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.filter === "all");
+      });
+      await renderGoals();
+
+      // 2. 탭 전환
       document
         .querySelectorAll(".tab")
         .forEach((t) => t.classList.remove("active"));
@@ -318,6 +333,16 @@ async function renderActiveGoals() {
         .querySelectorAll(".page")
         .forEach((p) => p.classList.remove("active"));
       document.getElementById("goals").classList.add("active");
+
+      // 3. 해당 목표로 스크롤 이동
+      setTimeout(() => {
+        const targetGoal = document.querySelector(
+          `.goal-card[data-id="${goalId}"]`
+        );
+        if (targetGoal) {
+          targetGoal.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }, 100);
     };
   });
 }
