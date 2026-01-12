@@ -239,22 +239,6 @@
               <div class="filter-dropdown">
                 <button
                   class="filter-toggle"
-                  id="statusFilter"
-                  data-value="all"
-                >
-                  상태 <span class="filter-arrow">▼</span>
-                </button>
-                <div class="filter-menu" id="statusMenu">
-                  <div class="filter-option selected" data-value="all">
-                    전체
-                  </div>
-                  <div class="filter-option" data-value="pending">미완료</div>
-                  <div class="filter-option" data-value="done">완료</div>
-                </div>
-              </div>
-              <div class="filter-dropdown">
-                <button
-                  class="filter-toggle"
                   id="priorityFilter"
                   data-value="all"
                 >
@@ -291,85 +275,132 @@
             </div>
           </div>
 
-          <div class="section">
-            <h2 class="section-title">
-              전체 할 일 <span class="todo-count" id="todoCount"></span>
-            </h2>
-            <ul class="todo-list" id="allTodoList"></ul>
-            <div class="add-todo">
-              <input
-                type="text"
-                id="todoInput"
-                placeholder="새로운 할 일 입력..."
-              />
-              <input type="date" id="todoDate" class="form-input" />
-              <select id="todoPriority">
-                <option value="low">LOW</option>
-                <option value="medium">MED</option>
-                <option value="high">HIGH</option>
-              </select>
-              <!-- Recurring Dropdown -->
-              <div class="recurring-dropdown" id="recurringDropdown">
+          <!-- 미완료 아코디언 -->
+          <div class="todo-accordion">
+            <button
+              class="todo-accordion-header open"
+              id="pendingAccordionHeader"
+            >
+              <span class="todo-accordion-arrow">▼</span>
+              <span class="todo-accordion-title">미완료</span>
+              <span class="todo-accordion-count" id="pendingCount">(0개)</span>
+            </button>
+            <div
+              class="todo-accordion-content open"
+              id="pendingAccordionContent"
+            >
+              <ul class="todo-list" id="pendingTodoList"></ul>
+            </div>
+          </div>
+
+          <!-- 완료 아코디언 -->
+          <div class="todo-accordion">
+            <button class="todo-accordion-header" id="completedAccordionHeader">
+              <span class="todo-accordion-arrow">▶</span>
+              <span class="todo-accordion-title">완료</span>
+              <span class="todo-accordion-count" id="completedCount"
+                >(0개)</span
+              >
+            </button>
+            <div class="todo-accordion-content" id="completedAccordionContent">
+              <ul class="todo-list" id="completedTodoList"></ul>
+              <!-- Pagination -->
+              <div class="todo-pagination" id="completedPagination">
                 <button
-                  class="recurring-toggle"
-                  id="recurringToggle"
-                  type="button"
+                  class="pagination-btn pagination-prev"
+                  id="paginationPrevGroup"
+                  title="이전 그룹"
                 >
-                  <svg
-                    class="recurring-icon"
-                    width="12"
-                    height="12"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <path d="M21 2v6h-6"></path>
-                    <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
-                    <path d="M3 22v-6h6"></path>
-                    <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
-                  </svg>
-                  반복 <span class="filter-arrow">▼</span>
+                  «
                 </button>
-                <div class="recurring-menu" id="recurringMenu">
-                  <div class="recurring-option selected" data-value="none">
-                    반복 안함
-                  </div>
-                  <div class="recurring-option" data-value="daily">매일</div>
-                  <div class="recurring-option" data-value="weekly">매주</div>
-                  <div class="recurring-option" data-value="monthly">매월</div>
-                  <div class="recurring-option" data-value="yearly">매년</div>
-                  <div class="recurring-option" data-value="custom">
-                    사용자 지정
-                  </div>
+                <div class="pagination-pages" id="paginationPages">
+                  <!-- 페이지 버튼들이 JS로 생성됨 -->
+                </div>
+                <button
+                  class="pagination-btn pagination-next"
+                  id="paginationNextGroup"
+                  title="다음 그룹"
+                >
+                  »
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Add Todo Form -->
+          <div class="add-todo">
+            <input
+              type="text"
+              id="todoInput"
+              placeholder="새로운 할 일 입력..."
+            />
+            <input type="date" id="todoDate" class="form-input" />
+            <select id="todoPriority">
+              <option value="low">LOW</option>
+              <option value="medium">MED</option>
+              <option value="high">HIGH</option>
+            </select>
+            <!-- Recurring Dropdown -->
+            <div class="recurring-dropdown" id="recurringDropdown">
+              <button
+                class="recurring-toggle"
+                id="recurringToggle"
+                type="button"
+              >
+                <svg
+                  class="recurring-icon"
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M21 2v6h-6"></path>
+                  <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
+                  <path d="M3 22v-6h6"></path>
+                  <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
+                </svg>
+                반복 <span class="filter-arrow">▼</span>
+              </button>
+              <div class="recurring-menu" id="recurringMenu">
+                <div class="recurring-option selected" data-value="none">
+                  반복 안함
+                </div>
+                <div class="recurring-option" data-value="daily">매일</div>
+                <div class="recurring-option" data-value="weekly">매주</div>
+                <div class="recurring-option" data-value="monthly">매월</div>
+                <div class="recurring-option" data-value="yearly">매년</div>
+                <div class="recurring-option" data-value="custom">
+                  사용자 지정
                 </div>
               </div>
-              <!-- Custom Interval (hidden by default) -->
-              <div
-                class="recurring-interval-group"
-                id="recurringIntervalGroup"
-                style="display: none"
-              >
-                <input
-                  type="number"
-                  id="recurringInterval"
-                  class="recurring-interval-input"
-                  value="1"
-                  min="1"
-                  max="99"
-                />
-                <select id="recurringCustomType" class="recurring-type-select">
-                  <option value="daily">일</option>
-                  <option value="weekly">주</option>
-                  <option value="monthly">개월</option>
-                  <option value="yearly">년</option>
-                </select>
-                <span class="recurring-interval-suffix">마다</span>
-              </div>
-              <button class="btn btn-primary" id="addTodoBtn">Add</button>
             </div>
+            <!-- Custom Interval (hidden by default) -->
+            <div
+              class="recurring-interval-group"
+              id="recurringIntervalGroup"
+              style="display: none"
+            >
+              <input
+                type="number"
+                id="recurringInterval"
+                class="recurring-interval-input"
+                value="1"
+                min="1"
+                max="99"
+              />
+              <select id="recurringCustomType" class="recurring-type-select">
+                <option value="daily">일</option>
+                <option value="weekly">주</option>
+                <option value="monthly">개월</option>
+                <option value="yearly">년</option>
+              </select>
+              <span class="recurring-interval-suffix">마다</span>
+            </div>
+            <button class="btn btn-primary" id="addTodoBtn">Add</button>
           </div>
         </div>
 

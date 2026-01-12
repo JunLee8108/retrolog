@@ -169,6 +169,72 @@
   opacity: 0.5;
 }
 
+/* ==================== Todo Accordion ==================== */
+.todo-accordion {
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.todo-accordion-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 16px;
+  background: var(--bg-grid);
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: left;
+}
+
+.todo-accordion-header:hover {
+  background: var(--border);
+}
+
+.todo-accordion-arrow {
+  font-size: 10px;
+  color: var(--text-secondary);
+  transition: transform 0.2s ease;
+  width: 12px;
+}
+
+.todo-accordion-header.open .todo-accordion-arrow {
+  transform: rotate(0deg);
+}
+
+.todo-accordion-header:not(.open) .todo-accordion-arrow {
+  transform: rotate(-90deg);
+}
+
+.todo-accordion-title {
+  font-family: "Gowun Batang", serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.todo-accordion-count {
+  font-family: "Space Mono", monospace;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.todo-accordion-content {
+  display: none;
+  background: var(--bg-card);
+}
+
+.todo-accordion-content.open {
+  display: block;
+}
+
+.todo-accordion-content .todo-list {
+  padding: 8px 16px;
+}
+
 /* ==================== Todo List ==================== */
 .todo-list {
   list-style: none;
@@ -342,6 +408,61 @@
 
 .delete-btn:hover {
   color: var(--red);
+}
+
+/* ==================== Pagination ==================== */
+.todo-pagination {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.todo-pagination.show {
+  display: flex;
+}
+
+.pagination-btn {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  font-family: "Space Mono", monospace;
+  font-size: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.pagination-btn.active {
+  background: var(--text-primary);
+  border-color: var(--text-primary);
+  color: var(--bg-card);
+  font-weight: 700;
+}
+
+.pagination-prev,
+.pagination-next {
+  font-weight: 700;
+}
+
+.pagination-pages {
+  display: flex;
+  gap: 4px;
 }
 
 /* ==================== Add Todo Form ==================== */
@@ -569,6 +690,23 @@
   margin: 0;
 }
 
+/* ==================== Empty State ==================== */
+.todo-empty-state {
+  text-align: center;
+  padding: 32px 24px;
+  color: var(--text-secondary);
+}
+
+.todo-empty-state-icon {
+  font-size: 28px;
+  margin-bottom: 8px;
+  opacity: 0.5;
+}
+
+.todo-empty-state-text {
+  font-size: 13px;
+}
+
 /* ==================== Responsive ==================== */
 @media (max-width: 600px) {
   .todo-command-bar {
@@ -635,5 +773,23 @@
   .edit-recurring-options {
     flex-direction: column;
     gap: 12px;
+  }
+
+  .todo-accordion-header {
+    padding: 12px 14px;
+  }
+
+  .todo-accordion-title {
+    font-size: 14px;
+  }
+
+  .todo-accordion-content .todo-list {
+    padding: 8px 12px;
+  }
+
+  .pagination-btn {
+    min-width: 28px;
+    height: 28px;
+    font-size: 11px;
   }
 }

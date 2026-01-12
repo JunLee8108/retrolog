@@ -3,10 +3,14 @@
 // ==================== Filter State ====================
 let todoFilters = {
   search: "",
-  status: "all",
   priority: "all",
   date: "all",
 };
+
+// ==================== Pagination State ====================
+let completedPage = 1;
+const ITEMS_PER_PAGE = 10;
+const PAGE_GROUP_SIZE = 5;
 
 let debounceTimer = null;
 let editingTodoId = null;
@@ -33,11 +37,46 @@ async function initTodos() {
   // Init filter dropdowns
   initFilters();
 
+  // Init accordions
+  initAccordions();
+
   // Init edit todo modal
   initEditTodoModal();
 
   await renderTodos();
   await renderTodayTodos();
+}
+
+// ==================== Accordion ====================
+function initAccordions() {
+  const pendingHeader = document.getElementById("pendingAccordionHeader");
+  const completedHeader = document.getElementById("completedAccordionHeader");
+
+  pendingHeader.addEventListener("click", () => {
+    toggleAccordion("pending");
+  });
+
+  completedHeader.addEventListener("click", () => {
+    toggleAccordion("completed");
+  });
+}
+
+function toggleAccordion(type) {
+  const header = document.getElementById(`${type}AccordionHeader`);
+  const content = document.getElementById(`${type}AccordionContent`);
+  const arrow = header.querySelector(".todo-accordion-arrow");
+
+  const isOpen = header.classList.contains("open");
+
+  if (isOpen) {
+    header.classList.remove("open");
+    content.classList.remove("open");
+    arrow.textContent = "▶";
+  } else {
+    header.classList.add("open");
+    content.classList.add("open");
+    arrow.textContent = "▼";
+  }
 }
 
 // ==================== Recurring Dropdown ====================
@@ -172,6 +211,7 @@ function initSearch() {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(async () => {
       todoFilters.search = e.target.value.toLowerCase().trim();
+      completedPage = 1; // Reset pagination on search
       await renderTodos();
     }, 300);
   });
@@ -179,7 +219,7 @@ function initSearch() {
 
 // ==================== Filter Dropdowns ====================
 function initFilters() {
-  const dropdowns = document.querySelectorAll(".filter-dropdown");
+  const dropdowns = document.querySelectorAll("#todos .filter-dropdown");
 
   // Toggle dropdown
   dropdowns.forEach((dropdown) => {
@@ -213,6 +253,7 @@ function initFilters() {
         updateToggleDisplay(toggle, option.textContent, value);
 
         dropdown.classList.remove("open");
+        completedPage = 1; // Reset pagination on filter change
         await renderTodos();
       });
     });
@@ -225,8 +266,9 @@ function initFilters() {
 
   // Reset button
   document.getElementById("filterReset").addEventListener("click", async () => {
-    todoFilters = { search: "", status: "all", priority: "all", date: "all" };
+    todoFilters = { search: "", priority: "all", date: "all" };
     document.getElementById("todoSearchInput").value = "";
+    completedPage = 1;
 
     // Reset all dropdowns
     dropdowns.forEach((dropdown) => {
@@ -237,12 +279,7 @@ function initFilters() {
         o.classList.toggle("selected", o.dataset.value === "all");
       });
 
-      const defaultText =
-        toggle.id === "statusFilter"
-          ? "상태"
-          : toggle.id === "priorityFilter"
-          ? "우선순위"
-          : "날짜";
+      const defaultText = toggle.id === "priorityFilter" ? "우선순위" : "날짜";
       updateToggleDisplay(toggle, defaultText, "all");
     });
 
@@ -252,14 +289,12 @@ function initFilters() {
 
 function getFilterType(toggleId) {
   switch (toggleId) {
-    case "statusFilter":
-      return "status";
     case "priorityFilter":
       return "priority";
     case "dateFilter":
       return "date";
     default:
-      return "status";
+      return "priority";
   }
 }
 
@@ -282,10 +317,6 @@ function filterTodos(todos) {
     ) {
       return false;
     }
-
-    // Status filter
-    if (todoFilters.status === "pending" && t.done) return false;
-    if (todoFilters.status === "done" && !t.done) return false;
 
     // Priority filter
     if (todoFilters.priority !== "all" && t.priority !== todoFilters.priority) {
@@ -468,47 +499,142 @@ async function saveEditTodo() {
 // ==================== Render All Todos ====================
 async function renderTodos() {
   const todos = await TodosDB.getAll();
-  const allList = document.getElementById("allTodoList");
-  const countEl = document.getElementById("todoCount");
-
-  // Apply filters
   const filtered = filterTodos(todos);
 
-  // Update count
-  countEl.textContent = `(${filtered.length}개)`;
-
-  if (todos.length === 0) {
-    allList.innerHTML = `
-      <li class="empty-state">
-        <div class="empty-state-icon">✓</div>
-        <div>할 일을 추가해보세요</div>
-      </li>
-    `;
-    return;
-  }
-
-  if (filtered.length === 0) {
-    allList.innerHTML = `
-      <li class="todo-no-results">
-        <div class="todo-no-results-icon">🔍</div>
-        <div>검색 결과가 없습니다</div>
-      </li>
-    `;
-    return;
-  }
+  // Separate pending and completed
+  const pending = filtered.filter((t) => !t.done);
+  const completed = filtered.filter((t) => t.done);
 
   // Sort: undated first, then by date, then by priority
   const priorityOrder = { high: 0, medium: 1, low: 2 };
-  filtered.sort((a, b) => {
+  const sortFn = (a, b) => {
     if (!a.date && b.date) return -1;
     if (a.date && !b.date) return 1;
     if (a.date && b.date && a.date !== b.date)
       return a.date.localeCompare(b.date);
     return priorityOrder[a.priority] - priorityOrder[b.priority];
+  };
+
+  pending.sort(sortFn);
+  completed.sort(sortFn);
+
+  // Render pending
+  renderPendingTodos(pending);
+
+  // Render completed with pagination
+  renderCompletedTodos(completed);
+
+  bindTodoEvents();
+}
+
+// ==================== Render Pending Todos ====================
+function renderPendingTodos(pending) {
+  const list = document.getElementById("pendingTodoList");
+  const countEl = document.getElementById("pendingCount");
+
+  countEl.textContent = `(${pending.length}개)`;
+
+  if (pending.length === 0) {
+    list.innerHTML = `
+      <li class="todo-empty-state">
+        <div class="todo-empty-state-icon">✓</div>
+        <div class="todo-empty-state-text">모든 할 일을 완료했습니다!</div>
+      </li>
+    `;
+    return;
+  }
+
+  list.innerHTML = pending.map((t) => renderTodoItem(t, true)).join("");
+}
+
+// ==================== Render Completed Todos ====================
+function renderCompletedTodos(completed) {
+  const list = document.getElementById("completedTodoList");
+  const countEl = document.getElementById("completedCount");
+  const pagination = document.getElementById("completedPagination");
+
+  countEl.textContent = `(${completed.length}개)`;
+
+  if (completed.length === 0) {
+    list.innerHTML = `
+      <li class="todo-empty-state">
+        <div class="todo-empty-state-icon">📋</div>
+        <div class="todo-empty-state-text">완료된 할 일이 없습니다</div>
+      </li>
+    `;
+    pagination.classList.remove("show");
+    return;
+  }
+
+  // Pagination
+  const totalPages = Math.ceil(completed.length / ITEMS_PER_PAGE);
+
+  // Ensure current page is valid
+  if (completedPage > totalPages) completedPage = totalPages;
+  if (completedPage < 1) completedPage = 1;
+
+  const startIndex = (completedPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const pageItems = completed.slice(startIndex, endIndex);
+
+  list.innerHTML = pageItems.map((t) => renderTodoItem(t, true)).join("");
+
+  // Render pagination
+  if (totalPages > 1) {
+    pagination.classList.add("show");
+    renderPagination(totalPages);
+  } else {
+    pagination.classList.remove("show");
+  }
+}
+
+// ==================== Render Pagination ====================
+function renderPagination(totalPages) {
+  const pagesContainer = document.getElementById("paginationPages");
+  const prevBtn = document.getElementById("paginationPrevGroup");
+  const nextBtn = document.getElementById("paginationNextGroup");
+
+  // Calculate current group
+  const currentGroup = Math.ceil(completedPage / PAGE_GROUP_SIZE);
+  const totalGroups = Math.ceil(totalPages / PAGE_GROUP_SIZE);
+  const groupStart = (currentGroup - 1) * PAGE_GROUP_SIZE + 1;
+  const groupEnd = Math.min(groupStart + PAGE_GROUP_SIZE - 1, totalPages);
+
+  // Render page buttons
+  let pagesHtml = "";
+  for (let i = groupStart; i <= groupEnd; i++) {
+    pagesHtml += `
+      <button class="pagination-btn ${i === completedPage ? "active" : ""}" 
+              data-page="${i}">${i}</button>
+    `;
+  }
+  pagesContainer.innerHTML = pagesHtml;
+
+  // Update prev/next group buttons
+  prevBtn.disabled = currentGroup === 1;
+  nextBtn.disabled = currentGroup === totalGroups;
+
+  // Bind events
+  pagesContainer.querySelectorAll(".pagination-btn").forEach((btn) => {
+    btn.onclick = async () => {
+      completedPage = parseInt(btn.dataset.page);
+      await renderTodos();
+    };
   });
 
-  allList.innerHTML = filtered.map((t) => renderTodoItem(t, true)).join("");
-  bindTodoEvents();
+  prevBtn.onclick = async () => {
+    if (currentGroup > 1) {
+      completedPage = (currentGroup - 2) * PAGE_GROUP_SIZE + 1;
+      await renderTodos();
+    }
+  };
+
+  nextBtn.onclick = async () => {
+    if (currentGroup < totalGroups) {
+      completedPage = currentGroup * PAGE_GROUP_SIZE + 1;
+      await renderTodos();
+    }
+  };
 }
 
 // ==================== Render Today Todos ====================
