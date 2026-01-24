@@ -217,9 +217,9 @@ function bindAuthEvents() {
   });
 
   // Login form submit
-  const loginFormEl = document.getElementById("loginFormEl");
-  if (loginFormEl) {
-    loginFormEl.addEventListener("submit", async (e) => {
+  const loginForm = document.getElementById("loginForm");
+  if (loginForm) {
+    loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
 
       const email = document.getElementById("loginEmail").value.trim();
@@ -249,9 +249,9 @@ function bindAuthEvents() {
   }
 
   // Signup form submit
-  const signupFormEl = document.getElementById("signupFormEl");
-  if (signupFormEl) {
-    signupFormEl.addEventListener("submit", async (e) => {
+  const signupForm = document.getElementById("signupForm");
+  if (signupForm) {
+    signupForm.addEventListener("submit", async (e) => {
       e.preventDefault();
 
       const name = document.getElementById("signupName").value.trim();
@@ -284,7 +284,7 @@ function bindAuthEvents() {
         );
 
         // Clear form
-        signupFormEl.reset();
+        signupForm.reset();
 
         // Switch to login tab
         setTimeout(() => {
