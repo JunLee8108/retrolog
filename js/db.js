@@ -332,9 +332,10 @@ const EventsDB = {
   async update(id, changes) {
     const updateData = {};
     if (changes.date !== undefined) updateData.date = changes.date;
-    if (changes.endDate !== undefined) updateData.end_date = changes.endDate;
+    if (changes.endDate !== undefined)
+      updateData.end_date = changes.endDate || null;
     if (changes.text !== undefined) updateData.text = changes.text;
-    if (changes.time !== undefined) updateData.time = changes.time;
+    if (changes.time !== undefined) updateData.time = changes.time || null;
     if (changes.color !== undefined) updateData.color = changes.color;
     if (changes.allDay !== undefined) updateData.all_day = changes.allDay;
 
