@@ -1,5 +1,46 @@
 // ==================== Supabase Database API ====================
 
+// ==================== Cache Helper ====================
+const CACHE_PREFIX = "planner_cache_";
+const CACHE_DURATION = 5 * 60 * 1000; // 5분
+
+const CacheHelper = {
+  get(key) {
+    try {
+      const cached = localStorage.getItem(CACHE_PREFIX + key);
+      if (!cached) return null;
+
+      const { data, timestamp } = JSON.parse(cached);
+      const isExpired = Date.now() - timestamp > CACHE_DURATION;
+
+      return { data, isExpired };
+    } catch (e) {
+      return null;
+    }
+  },
+
+  set(key, data) {
+    try {
+      localStorage.setItem(
+        CACHE_PREFIX + key,
+        JSON.stringify({ data, timestamp: Date.now() }),
+      );
+    } catch (e) {
+      console.warn("Cache save failed:", e);
+    }
+  },
+
+  clear(key) {
+    localStorage.removeItem(CACHE_PREFIX + key);
+  },
+
+  clearAll() {
+    Object.keys(localStorage)
+      .filter((k) => k.startsWith(CACHE_PREFIX))
+      .forEach((k) => localStorage.removeItem(k));
+  },
+};
+
 // ==================== Helper Functions ====================
 function formatDateKey(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
@@ -79,9 +120,19 @@ const SettingsDB = {
 
 // ==================== Todos API ====================
 const TodosDB = {
-  async getAll() {
+  _cacheKey: "todos",
+
+  async getAll(useCache = true) {
     const userId = getUserId();
     if (!userId) return [];
+
+    // 캐시 확인
+    if (useCache) {
+      const cached = CacheHelper.get(this._cacheKey);
+      if (cached && !cached.isExpired) {
+        return cached.data;
+      }
+    }
 
     const { data, error } = await supabaseClient
       .from("todos")
@@ -91,49 +142,30 @@ const TodosDB = {
 
     if (error) {
       console.error("Todos getAll error:", error);
-      return [];
+      // 에러 시 만료된 캐시라도 반환
+      const cached = CacheHelper.get(this._cacheKey);
+      return cached?.data || [];
     }
-    return data || [];
+
+    const result = data || [];
+    CacheHelper.set(this._cacheKey, result);
+    return result;
   },
 
   async getByDate(date) {
-    const userId = getUserId();
-    if (!userId) return [];
-
-    const { data, error } = await supabaseClient
-      .from("todos")
-      .select("*")
-      .eq("user_id", userId)
-      .eq("date", date);
-
-    return data || [];
+    const all = await this.getAll();
+    return all.filter((t) => t.date === date);
   },
 
   async getUndated() {
-    const userId = getUserId();
-    if (!userId) return [];
-
-    const { data, error } = await supabaseClient
-      .from("todos")
-      .select("*")
-      .eq("user_id", userId)
-      .is("date", null);
-
-    return data || [];
+    const all = await this.getAll();
+    return all.filter((t) => !t.date);
   },
 
   async getTodayAndUndated() {
-    const userId = getUserId();
-    if (!userId) return [];
-
     const todayKey = formatDateKey(new Date());
-    const { data, error } = await supabaseClient
-      .from("todos")
-      .select("*")
-      .eq("user_id", userId)
-      .or(`date.eq.${todayKey},date.is.null`);
-
-    return data || [];
+    const all = await this.getAll();
+    return all.filter((t) => t.date === todayKey || !t.date);
   },
 
   async add(todo) {
@@ -159,6 +191,8 @@ const TodosDB = {
       console.error("Todos add error:", error);
       return null;
     }
+
+    CacheHelper.clear(this._cacheKey);
     return data;
   },
 
@@ -181,11 +215,13 @@ const TodosDB = {
       .eq("id", id);
 
     if (error) console.error("Todos update error:", error);
+    CacheHelper.clear(this._cacheKey);
   },
 
   async delete(id) {
     const { error } = await supabaseClient.from("todos").delete().eq("id", id);
     if (error) console.error("Todos delete error:", error);
+    CacheHelper.clear(this._cacheKey);
   },
 
   async toggle(id) {
@@ -217,14 +253,26 @@ const TodosDB = {
         recurringInterval: todo.recurring_interval || 1,
       });
     }
+
+    CacheHelper.clear(this._cacheKey);
   },
 };
 
 // ==================== Events API ====================
 const EventsDB = {
-  async getAll() {
+  _cacheKey: "events",
+
+  async getAll(useCache = true) {
     const userId = getUserId();
     if (!userId) return [];
+
+    // 캐시 확인
+    if (useCache) {
+      const cached = CacheHelper.get(this._cacheKey);
+      if (cached && !cached.isExpired) {
+        return cached.data;
+      }
+    }
 
     const { data, error } = await supabaseClient
       .from("events")
@@ -234,32 +282,24 @@ const EventsDB = {
 
     if (error) {
       console.error("Events getAll error:", error);
-      return [];
+      const cached = CacheHelper.get(this._cacheKey);
+      return cached?.data || [];
     }
 
     // 컬럼명 변환 (snake_case -> camelCase)
-    return (data || []).map((e) => ({
+    const result = (data || []).map((e) => ({
       ...e,
       endDate: e.end_date,
       allDay: e.all_day,
     }));
+
+    CacheHelper.set(this._cacheKey, result);
+    return result;
   },
 
   async getByDate(date) {
-    const userId = getUserId();
-    if (!userId) return [];
-
-    const { data, error } = await supabaseClient
-      .from("events")
-      .select("*")
-      .eq("user_id", userId)
-      .eq("date", date);
-
-    return (data || []).map((e) => ({
-      ...e,
-      endDate: e.end_date,
-      allDay: e.all_day,
-    }));
+    const all = await this.getAll();
+    return all.filter((e) => e.date === date);
   },
 
   async add(event) {
@@ -284,6 +324,8 @@ const EventsDB = {
       console.error("Events add error:", error);
       return null;
     }
+
+    CacheHelper.clear(this._cacheKey);
     return { ...data, endDate: data.end_date, allDay: data.all_day };
   },
 
@@ -300,20 +342,33 @@ const EventsDB = {
       .from("events")
       .update(updateData)
       .eq("id", id);
+
     if (error) console.error("Events update error:", error);
+    CacheHelper.clear(this._cacheKey);
   },
 
   async delete(id) {
     const { error } = await supabaseClient.from("events").delete().eq("id", id);
     if (error) console.error("Events delete error:", error);
+    CacheHelper.clear(this._cacheKey);
   },
 };
 
 // ==================== Goals API ====================
 const GoalsDB = {
-  async getAll() {
+  _cacheKey: "goals",
+
+  async getAll(useCache = true) {
     const userId = getUserId();
     if (!userId) return [];
+
+    // 캐시 확인
+    if (useCache) {
+      const cached = CacheHelper.get(this._cacheKey);
+      if (cached && !cached.isExpired) {
+        return cached.data;
+      }
+    }
 
     const { data: goals, error } = await supabaseClient
       .from("goals")
@@ -321,7 +376,10 @@ const GoalsDB = {
       .eq("user_id", userId)
       .order("created_at", { ascending: false });
 
-    if (error || !goals) return [];
+    if (error || !goals) {
+      const cached = CacheHelper.get(this._cacheKey);
+      return cached?.data || [];
+    }
 
     // 각 goal의 milestones 가져오기
     const goalsWithMilestones = await Promise.all(
@@ -340,6 +398,7 @@ const GoalsDB = {
       }),
     );
 
+    CacheHelper.set(this._cacheKey, goalsWithMilestones);
     return goalsWithMilestones;
   },
 
@@ -369,6 +428,8 @@ const GoalsDB = {
       console.error("Goals add error:", error);
       return null;
     }
+
+    CacheHelper.clear(this._cacheKey);
     return data?.id;
   },
 
@@ -385,13 +446,15 @@ const GoalsDB = {
       .from("goals")
       .update(updateData)
       .eq("id", id);
+
     if (error) console.error("Goals update error:", error);
+    CacheHelper.clear(this._cacheKey);
   },
 
   async delete(id) {
-    // Milestones는 CASCADE로 자동 삭제됨
     const { error } = await supabaseClient.from("goals").delete().eq("id", id);
     if (error) console.error("Goals delete error:", error);
+    CacheHelper.clear(this._cacheKey);
   },
 };
 
@@ -421,6 +484,8 @@ const MilestonesDB = {
       console.error("Milestones add error:", error);
       return null;
     }
+
+    CacheHelper.clear(GoalsDB._cacheKey);
     return data;
   },
 
@@ -437,6 +502,8 @@ const MilestonesDB = {
         .update({ completed: !milestone.completed })
         .eq("id", id);
     }
+
+    CacheHelper.clear(GoalsDB._cacheKey);
   },
 
   async delete(id) {
@@ -444,15 +511,27 @@ const MilestonesDB = {
       .from("milestones")
       .delete()
       .eq("id", id);
+
     if (error) console.error("Milestones delete error:", error);
+    CacheHelper.clear(GoalsDB._cacheKey);
   },
 };
 
 // ==================== Notes API ====================
 const NotesDB = {
-  async getAll() {
+  _cacheKey: "notes",
+
+  async getAll(useCache = true) {
     const userId = getUserId();
     if (!userId) return [];
+
+    // 캐시 확인
+    if (useCache) {
+      const cached = CacheHelper.get(this._cacheKey);
+      if (cached && !cached.isExpired) {
+        return cached.data;
+      }
+    }
 
     const { data, error } = await supabaseClient
       .from("notes")
@@ -462,32 +541,28 @@ const NotesDB = {
 
     if (error) {
       console.error("Notes getAll error:", error);
-      return [];
+      const cached = CacheHelper.get(this._cacheKey);
+      return cached?.data || [];
     }
 
-    return (data || []).map((n) => ({
+    const result = (data || []).map((n) => ({
       ...n,
       createdAt: n.created_at,
       updatedAt: n.updated_at,
     }));
+
+    CacheHelper.set(this._cacheKey, result);
+    return result;
   },
 
   async search(query) {
-    const userId = getUserId();
-    if (!userId) return [];
-
+    const all = await this.getAll();
     const q = query.toLowerCase();
-    const { data, error } = await supabaseClient
-      .from("notes")
-      .select("*")
-      .eq("user_id", userId)
-      .or(`title.ilike.%${q}%,content.ilike.%${q}%`);
-
-    return (data || []).map((n) => ({
-      ...n,
-      createdAt: n.created_at,
-      updatedAt: n.updated_at,
-    }));
+    return all.filter(
+      (n) =>
+        n.title?.toLowerCase().includes(q) ||
+        n.content?.toLowerCase().includes(q),
+    );
   },
 
   async add(note) {
@@ -510,6 +585,8 @@ const NotesDB = {
       console.error("Notes add error:", error);
       return null;
     }
+
+    CacheHelper.clear(this._cacheKey);
     return data;
   },
 
@@ -524,12 +601,15 @@ const NotesDB = {
       .from("notes")
       .update(updateData)
       .eq("id", id);
+
     if (error) console.error("Notes update error:", error);
+    CacheHelper.clear(this._cacheKey);
   },
 
   async delete(id) {
     const { error } = await supabaseClient.from("notes").delete().eq("id", id);
     if (error) console.error("Notes delete error:", error);
+    CacheHelper.clear(this._cacheKey);
   },
 
   async togglePin(id) {
@@ -545,6 +625,8 @@ const NotesDB = {
         .update({ pinned: !note.pinned })
         .eq("id", id);
     }
+
+    CacheHelper.clear(this._cacheKey);
   },
 };
 
@@ -560,6 +642,7 @@ const db = {
       const userId = getUserId();
       if (userId)
         await supabaseClient.from("todos").delete().eq("user_id", userId);
+      CacheHelper.clear(TodosDB._cacheKey);
     },
   },
   events: {
@@ -572,6 +655,7 @@ const db = {
       const userId = getUserId();
       if (userId)
         await supabaseClient.from("events").delete().eq("user_id", userId);
+      CacheHelper.clear(EventsDB._cacheKey);
     },
     get: async (id) => {
       const { data } = await supabaseClient
@@ -594,6 +678,7 @@ const db = {
       const userId = getUserId();
       if (userId)
         await supabaseClient.from("goals").delete().eq("user_id", userId);
+      CacheHelper.clear(GoalsDB._cacheKey);
     },
   },
   milestones: {
@@ -621,6 +706,7 @@ const db = {
       const userId = getUserId();
       if (userId)
         await supabaseClient.from("notes").delete().eq("user_id", userId);
+      CacheHelper.clear(NotesDB._cacheKey);
     },
   },
   settings: {
