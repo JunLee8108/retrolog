@@ -217,7 +217,6 @@ function bindAuthEvents() {
   });
 
   // Login form submit
-  const loginForm = document.getElementById("loginForm");
   if (loginForm) {
     loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -249,7 +248,6 @@ function bindAuthEvents() {
   }
 
   // Signup form submit
-  const signupForm = document.getElementById("signupForm");
   if (signupForm) {
     signupForm.addEventListener("submit", async (e) => {
       e.preventDefault();
