@@ -1,0 +1,513 @@
+/* ==================== Auth Screen ==================== */
+
+.auth-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-main);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 0.3s,
+    visibility 0.3s;
+}
+
+.auth-screen.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Grid Pattern Background */
+.auth-screen::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+  background-size: 20px 20px;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ==================== Auth Container ==================== */
+
+.auth-container {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 20px;
+  animation: authFadeIn 0.4s ease;
+}
+
+@keyframes authFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==================== Auth Logo ==================== */
+
+.auth-logo {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.auth-logo-img {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 12px;
+}
+
+.auth-logo-text {
+  font-family: "Gowun Batang", serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.auth-logo-sub {
+  font-family: "Space Mono", monospace;
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-top: 4px;
+}
+
+/* ==================== Auth Card ==================== */
+
+.auth-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+/* ==================== Auth Tabs ==================== */
+
+.auth-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+}
+
+.auth-tab {
+  flex: 1;
+  padding: 14px 20px;
+  background: var(--bg-grid);
+  border: none;
+  font-family: "Space Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+}
+
+.auth-tab:hover {
+  color: var(--text-primary);
+  background: var(--bg-card);
+}
+
+.auth-tab.active {
+  background: var(--bg-card);
+  color: var(--red);
+}
+
+.auth-tab.active::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--red);
+}
+
+.auth-tab:first-child {
+  border-right: 1px solid var(--border);
+}
+
+/* ==================== Auth Form ==================== */
+
+.auth-form {
+  padding: 24px;
+  display: none;
+}
+
+.auth-form.active {
+  display: block;
+  animation: formFadeIn 0.2s ease;
+}
+
+@keyframes formFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ==================== Auth Input Group ==================== */
+
+.auth-input-group {
+  margin-bottom: 20px;
+}
+
+.auth-label {
+  display: block;
+  font-family: "Space Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.auth-input-wrapper {
+  position: relative;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--bg-main);
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text-primary);
+  transition: all 0.15s;
+}
+
+.auth-input:focus {
+  outline: none;
+  border-color: var(--text-primary);
+}
+
+.auth-input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.6;
+}
+
+.auth-input.error {
+  border-color: var(--red);
+}
+
+/* Password Toggle */
+.auth-input-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  font-size: 16px;
+  transition: color 0.15s;
+}
+
+.auth-input-toggle:hover {
+  color: var(--text-primary);
+}
+
+.auth-input-wrapper .auth-input {
+  padding-right: 44px;
+}
+
+/* ==================== Auth Button ==================== */
+
+.auth-btn {
+  width: 100%;
+  padding: 16px 24px;
+  background: var(--red);
+  border: 1px solid var(--red);
+  border-radius: 2px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-top: 8px;
+}
+
+.auth-btn:hover {
+  background: #b83b3b;
+  border-color: #b83b3b;
+}
+
+.auth-btn:disabled {
+  background: var(--text-secondary);
+  border-color: var(--text-secondary);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.auth-btn.loading {
+  position: relative;
+  color: transparent;
+}
+
+.auth-btn.loading::after {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  top: 50%;
+  left: 50%;
+  margin-left: -9px;
+  margin-top: -9px;
+  border: 2px solid transparent;
+  border-top-color: white;
+  border-radius: 50%;
+  animation: authSpinner 0.6s linear infinite;
+}
+
+@keyframes authSpinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ==================== Auth Footer ==================== */
+
+.auth-footer {
+  text-align: center;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px dashed var(--border);
+}
+
+.auth-link {
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.15s;
+  background: none;
+  border: none;
+  font-family: inherit;
+}
+
+.auth-link:hover {
+  color: var(--blue);
+}
+
+/* ==================== Auth Messages ==================== */
+
+.auth-message {
+  padding: 12px 16px;
+  border-radius: 2px;
+  font-size: 13px;
+  margin-bottom: 20px;
+  display: none;
+}
+
+.auth-message.show {
+  display: block;
+  animation: messageSlide 0.2s ease;
+}
+
+@keyframes messageSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.auth-message.error {
+  background: rgba(214, 69, 69, 0.1);
+  border: 1px solid var(--red);
+  color: var(--red);
+}
+
+.auth-message.success {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid var(--green);
+  color: var(--green);
+}
+
+/* ==================== Reset Password Form ==================== */
+
+.auth-reset-form {
+  padding: 24px;
+  display: none;
+}
+
+.auth-reset-form.active {
+  display: block;
+  animation: formFadeIn 0.2s ease;
+}
+
+.auth-reset-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.auth-reset-title {
+  font-family: "Gowun Batang", serif;
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+.auth-reset-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.auth-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.15s;
+  background: none;
+  border: none;
+  font-family: inherit;
+  margin-top: 16px;
+}
+
+.auth-back-link:hover {
+  color: var(--text-primary);
+}
+
+/* ==================== Auth Copyright ==================== */
+
+.auth-copyright {
+  text-align: center;
+  margin-top: 24px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+/* ==================== User Menu (Header) ==================== */
+
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--bg-grid);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.user-info:hover {
+  border-color: var(--text-primary);
+}
+
+.user-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--red);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.user-name {
+  font-size: 12px;
+  color: var(--text-primary);
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.logout-btn {
+  padding: 8px 12px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.logout-btn:hover {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+/* ==================== Responsive ==================== */
+
+@media (max-width: 480px) {
+  .auth-container {
+    margin: 0 16px;
+  }
+
+  .auth-logo-img {
+    width: 64px;
+    height: 64px;
+  }
+
+  .auth-logo-text {
+    font-size: 24px;
+  }
+
+  .auth-form,
+  .auth-reset-form {
+    padding: 20px;
+  }
+
+  .auth-input {
+    padding: 12px 14px;
+    font-size: 16px; /* iOS zoom 방지 */
+  }
+
+  .auth-btn {
+    padding: 14px 20px;
+  }
+
+  .user-name {
+    display: none;
+  }
+
+  .user-info {
+    padding: 6px 8px;
+  }
+}

@@ -7,6 +7,17 @@ const $$ = (selector) => document.querySelectorAll(selector);
 // ==================== Initialize ====================
 document.addEventListener("DOMContentLoaded", async () => {
   initTheme();
+
+  // Auth 초기화 - 로그인 체크
+  const isLoggedIn = await initAuth();
+
+  if (isLoggedIn) {
+    await initializeApp();
+  }
+});
+
+// ==================== Initialize App (after auth) ====================
+async function initializeApp() {
   initTabs();
   initTodayDisplay();
 
@@ -20,7 +31,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Apply saved start page
   await applyStartPage();
-});
+}
 
 // ==================== Start Page ====================
 async function applyStartPage() {
@@ -40,7 +51,7 @@ function initTheme() {
       document.documentElement.getAttribute("data-theme") === "dark";
     document.documentElement.setAttribute(
       "data-theme",
-      isDark ? "light" : "dark"
+      isDark ? "light" : "dark",
     );
     localStorage.setItem("planner_theme", isDark ? "light" : "dark");
   });
@@ -96,8 +107,7 @@ function initTodayDisplay() {
     "Friday",
     "Saturday",
   ];
-  $("todayDateMain").textContent = `${today.getFullYear()}년 ${
-    today.getMonth() + 1
-  }월 ${today.getDate()}일`;
+  $("todayDateMain").textContent =
+    `${today.getFullYear()}년 ${today.getMonth() + 1}월 ${today.getDate()}일`;
   $("todayDateSub").textContent = daysEn[today.getDay()];
 }

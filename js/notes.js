@@ -98,7 +98,7 @@ function bindNoteEvents() {
   document.querySelectorAll(".note-card").forEach((card) => {
     card.addEventListener("click", (e) => {
       if (e.target.closest(".note-actions")) return;
-      editingNoteId = Number(card.dataset.id);
+      editingNoteId = card.dataset.id;
       openNoteModal(editingNoteId);
     });
   });
@@ -107,7 +107,7 @@ function bindNoteEvents() {
   document.querySelectorAll(".note-action-btn.pin").forEach((btn) => {
     btn.onclick = async (e) => {
       e.stopPropagation();
-      await NotesDB.togglePin(Number(btn.dataset.id));
+      await NotesDB.togglePin(btn.dataset.id);
       await renderNotes();
     };
   });
@@ -117,7 +117,7 @@ function bindNoteEvents() {
     btn.onclick = async (e) => {
       e.stopPropagation();
       if (confirm("이 메모를 삭제하시겠습니까?")) {
-        await NotesDB.delete(Number(btn.dataset.id));
+        await NotesDB.delete(btn.dataset.id);
         await renderNotes();
       }
     };
@@ -229,7 +229,7 @@ function formatNoteDate(dateStr) {
   // Today
   if (diff < 24 * 60 * 60 * 1000 && d.getDate() === now.getDate()) {
     return `오늘 ${String(d.getHours()).padStart(2, "0")}:${String(
-      d.getMinutes()
+      d.getMinutes(),
     ).padStart(2, "0")}`;
   }
 

@@ -56,11 +56,11 @@ async function updateTodayStats() {
   const allGoals = await GoalsDB.getAll();
   const totalMilestones = allGoals.reduce(
     (sum, g) => sum + g.milestones.length,
-    0
+    0,
   );
   const completedMilestones = allGoals.reduce(
     (sum, g) => sum + g.milestones.filter((m) => m.completed).length,
-    0
+    0,
   );
   const goalPercent =
     totalMilestones > 0
@@ -68,9 +68,8 @@ async function updateTodayStats() {
       : 0;
 
   document.getElementById("goalCircleText").textContent = goalPercent + "%";
-  document.getElementById(
-    "goalProgressText"
-  ).textContent = `${completedMilestones} / ${totalMilestones} 마일스톤`;
+  document.getElementById("goalProgressText").textContent =
+    `${completedMilestones} / ${totalMilestones} 마일스톤`;
 
   const goalCircle = document.getElementById("goalCircle");
   const goalOffset = 94.2 - (94.2 * goalPercent) / 100;
@@ -110,11 +109,11 @@ async function renderTodayTodosForTodayPage() {
     <li class="today-todo-item ${t.done ? "completed" : ""}" data-id="${t.id}">
       <div class="checkbox ${t.done ? "checked" : ""}" data-id="${t.id}"></div>
       <span class="today-todo-text" data-id="${t.id}">${escapeHtmlToday(
-        t.text
+        t.text,
       )}</span>
       <span class="todo-priority ${t.priority}">${t.priority}</span>
     </li>
-  `
+  `,
     )
     .join("");
 
@@ -135,7 +134,7 @@ function bindTodayTodoEvents() {
   // Checkbox toggle
   document.querySelectorAll("#todayTodoList .checkbox").forEach((cb) => {
     cb.onclick = async () => {
-      await TodosDB.toggle(Number(cb.dataset.id));
+      await TodosDB.toggle(cb.dataset.id);
       await renderTodayPage();
       if (typeof renderTodos === "function") await renderTodos();
       if (typeof renderCalendar === "function") {
@@ -151,7 +150,7 @@ function bindTodayTodoEvents() {
     .forEach((text) => {
       text.onclick = () => {
         if (typeof openEditTodoModal === "function") {
-          openEditTodoModal(Number(text.dataset.id));
+          openEditTodoModal(text.dataset.id);
         }
       };
     });
@@ -193,11 +192,15 @@ async function renderUpcomingEvents() {
   // Filter events within next 7 days
   const upcomingEvents = allEvents
     .filter((ev) => {
-      const eventDate = ev.endDate || ev.date;
-      return ev.date <= weekEndKey && eventDate >= todayKey;
+      const eventEnd = ev.endDate || ev.date;
+      return ev.date <= weekEndKey && eventEnd >= todayKey;
     })
     .sort((a, b) => {
-      if (a.date !== b.date) return a.date.localeCompare(b.date);
+      // 다일 일정의 경우 표시 날짜 기준으로 정렬
+      const aDisplayDate = getDisplayDate(a, todayKey);
+      const bDisplayDate = getDisplayDate(b, todayKey);
+      if (aDisplayDate !== bDisplayDate)
+        return aDisplayDate.localeCompare(bDisplayDate);
       return (a.time || "").localeCompare(b.time || "");
     });
 
@@ -211,11 +214,13 @@ async function renderUpcomingEvents() {
     return;
   }
 
-  // Group by date
+  // Group by display date (considering multi-day events)
   const grouped = {};
   upcomingEvents.slice(0, 8).forEach((ev) => {
-    if (!grouped[ev.date]) grouped[ev.date] = [];
-    grouped[ev.date].push(ev);
+    // 다일 일정이고 시작일이 오늘 이전이면 오늘 날짜로 그룹핑
+    const displayDate = getDisplayDate(ev, todayKey);
+    if (!grouped[displayDate]) grouped[displayDate] = [];
+    grouped[displayDate].push(ev);
   });
 
   let html = "";
@@ -258,7 +263,6 @@ async function renderUpcomingEvents() {
 }
 
 // ==================== Render Active Goals ====================
-// ==================== Render Active Goals ====================
 async function renderActiveGoals() {
   const container = document.getElementById("activeGoals");
   const allGoals = await GoalsDB.getAll();
@@ -296,8 +300,8 @@ async function renderActiveGoals() {
         <div class="active-goal-info">
           <div class="active-goal-title">${escapeHtmlToday(goal.title)}</div>
           <div class="active-goal-meta">${typeLabel} · ${formatDateShortToday(
-        goal.endDate
-      )} 까지</div>
+            goal.endDate,
+          )} 까지</div>
         </div>
         <div class="active-goal-progress">
           <div class="active-goal-bar">
@@ -337,7 +341,7 @@ async function renderActiveGoals() {
       // 3. 해당 목표로 스크롤 이동
       setTimeout(() => {
         const targetGoal = document.querySelector(
-          `.goal-card[data-id="${goalId}"]`
+          `.goal-card[data-id="${goalId}"]`,
         );
         if (targetGoal) {
           targetGoal.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -376,8 +380,8 @@ async function renderRecentNotes() {
       <div class="recent-note-card color-${note.color}" data-id="${note.id}">
         <div class="recent-note-title">
           ${note.pinned ? '<span class="recent-note-pin">📌</span> ' : ""}${
-        escapeHtmlToday(note.title) || "제목 없음"
-      }
+            escapeHtmlToday(note.title) || "제목 없음"
+          }
         </div>
         <div class="recent-note-preview">${escapeHtmlToday(preview)}</div>
       </div>
@@ -399,7 +403,7 @@ async function renderRecentNotes() {
 
       // Open the note modal if function exists
       if (typeof openNoteModal === "function") {
-        setTimeout(() => openNoteModal(Number(card.dataset.id)), 100);
+        setTimeout(() => openNoteModal(card.dataset.id), 100);
       }
     };
   });
@@ -409,7 +413,7 @@ async function renderRecentNotes() {
 function formatDateKeyToday(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
     2,
-    "0"
+    "0",
   )}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
@@ -431,6 +435,13 @@ function getDateLabelToday(dateKey, todayKey) {
 function formatDateShortToday(dateStr) {
   const [y, m, d] = dateStr.split("-").map(Number);
   return `${m}/${d}`;
+}
+
+function getDisplayDate(event, todayKey) {
+  if (event.endDate && event.date < todayKey && event.endDate >= todayKey) {
+    return todayKey;
+  }
+  return event.date;
 }
 
 function escapeHtmlToday(text) {

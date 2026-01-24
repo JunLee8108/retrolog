@@ -47,13 +47,11 @@ function pressNavButton(btnId) {
   setTimeout(() => btn.classList.remove("pressed"), 150);
 }
 
-// ==================== Month Navigation ====================
 function goToPrevMonth() {
   currentDate.setMonth(currentDate.getMonth() - 1);
   renderCalendar();
   renderCalendarList();
 }
-
 function goToNextMonth() {
   currentDate.setMonth(currentDate.getMonth() + 1);
   renderCalendar();
@@ -62,10 +60,7 @@ function goToNextMonth() {
 
 // ==================== Helper Functions ====================
 function formatDateKey(date) {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
-    2,
-    "0"
-  )}-${String(date.getDate()).padStart(2, "0")}`;
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
 function getDatesBetween(startDate, endDate) {
@@ -79,42 +74,36 @@ function getDatesBetween(startDate, endDate) {
   return dates;
 }
 
-// ==================== Build Calendar Grid Data ====================
+// ==================== Build Calendar Grid ====================
 function buildCalendarGrid(year, month) {
   const firstDay = new Date(year, month, 1).getDay();
   const lastDate = new Date(year, month + 1, 0).getDate();
   const prevLastDate = new Date(year, month, 0).getDate();
-
   const grid = [];
   let currentWeek = [];
 
-  // Previous month days
   for (let i = firstDay - 1; i >= 0; i--) {
     const prevMonth = month === 0 ? 11 : month - 1;
     const prevYear = month === 0 ? year - 1 : year;
     currentWeek.push({
       date: prevLastDate - i,
-      dateKey: `${prevYear}-${String(prevMonth + 1).padStart(2, "0")}-${String(
-        prevLastDate - i
-      ).padStart(2, "0")}`,
+      dateKey: `${prevYear}-${String(prevMonth + 1).padStart(2, "0")}-${String(prevLastDate - i).padStart(2, "0")}`,
       otherMonth: true,
     });
   }
 
-  // Current month days
   for (let d = 1; d <= lastDate; d++) {
-    const dateKey = `${year}-${String(month + 1).padStart(2, "0")}-${String(
-      d
-    ).padStart(2, "0")}`;
-    currentWeek.push({ date: d, dateKey, otherMonth: false });
-
+    currentWeek.push({
+      date: d,
+      dateKey: `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`,
+      otherMonth: false,
+    });
     if (currentWeek.length === 7) {
       grid.push(currentWeek);
       currentWeek = [];
     }
   }
 
-  // Next month days
   if (currentWeek.length > 0) {
     let nextDay = 1;
     const nextMonth = month === 11 ? 0 : month + 1;
@@ -122,30 +111,24 @@ function buildCalendarGrid(year, month) {
     while (currentWeek.length < 7) {
       currentWeek.push({
         date: nextDay,
-        dateKey: `${nextYear}-${String(nextMonth + 1).padStart(
-          2,
-          "0"
-        )}-${String(nextDay).padStart(2, "0")}`,
+        dateKey: `${nextYear}-${String(nextMonth + 1).padStart(2, "0")}-${String(nextDay).padStart(2, "0")}`,
         otherMonth: true,
       });
       nextDay++;
     }
     grid.push(currentWeek);
   }
-
   return grid;
 }
 
-// ==================== Process Multi-day Events for Week ====================
+// ==================== Process Multi-day Events ====================
 function processMultiDayEventsForWeek(events, weekDates) {
-  const weekStart = weekDates[0];
-  const weekEnd = weekDates[6];
-
-  const weekEvents = events.filter((ev) => {
-    if (!ev.allDay || !ev.endDate) return false;
-    return ev.date <= weekEnd && ev.endDate >= weekStart;
-  });
-
+  const weekStart = weekDates[0],
+    weekEnd = weekDates[6];
+  const weekEvents = events.filter(
+    (ev) =>
+      ev.allDay && ev.endDate && ev.date <= weekEnd && ev.endDate >= weekStart,
+  );
   weekEvents.sort((a, b) => {
     const durationA = getDatesBetween(a.date, a.endDate).length;
     const durationB = getDatesBetween(b.date, b.endDate).length;
@@ -154,11 +137,9 @@ function processMultiDayEventsForWeek(events, weekDates) {
   });
 
   const rows = [];
-
   weekEvents.forEach((event) => {
     const eventStart = event.date < weekStart ? weekStart : event.date;
     const eventEnd = event.endDate > weekEnd ? weekEnd : event.endDate;
-
     const startIdx = weekDates.indexOf(eventStart);
     const endIdx = weekDates.indexOf(eventEnd);
 
@@ -168,15 +149,12 @@ function processMultiDayEventsForWeek(events, weekDates) {
         rows[rowIdx] = [];
         break;
       }
-
-      const hasOverlap = rows[rowIdx].some((e) => {
-        return !(e.endIdx < startIdx || e.startIdx > endIdx);
-      });
-
+      const hasOverlap = rows[rowIdx].some(
+        (e) => !(e.endIdx < startIdx || e.startIdx > endIdx),
+      );
       if (!hasOverlap) break;
       rowIdx++;
     }
-
     rows[rowIdx].push({
       event,
       startIdx,
@@ -185,7 +163,6 @@ function processMultiDayEventsForWeek(events, weekDates) {
       isEnd: event.endDate <= weekEnd,
     });
   });
-
   return rows;
 }
 
@@ -193,26 +170,23 @@ function processMultiDayEventsForWeek(events, weekDates) {
 async function renderCalendar() {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
-  document.getElementById("calendarTitle").textContent = `${year}년 ${
-    month + 1
-  }월`;
+  document.getElementById("calendarTitle").textContent =
+    `${year}년 ${month + 1}월`;
 
   const today = new Date();
   const todayKey = formatDateKey(today);
-
   const grid = buildCalendarGrid(year, month);
 
   const allEvents = await EventsDB.getAll();
   const allTodos = await TodosDB.getAll();
 
   const multiDayEvents = allEvents.filter(
-    (ev) => ev.allDay && ev.endDate && ev.endDate !== ev.date
+    (ev) => ev.allDay && ev.endDate && ev.endDate !== ev.date,
   );
   const singleDayEvents = allEvents.filter(
-    (ev) => !ev.allDay || !ev.endDate || ev.endDate === ev.date
+    (ev) => !ev.allDay || !ev.endDate || ev.endDate === ev.date,
   );
 
-  // Build data by date
   const dataByDate = {};
   singleDayEvents.forEach((ev) => {
     if (!dataByDate[ev.date]) dataByDate[ev.date] = { events: [], todos: [] };
@@ -227,33 +201,29 @@ async function renderCalendar() {
   });
 
   let html = "";
-
   grid.forEach((week) => {
     const weekDates = week.map((d) => d.dateKey);
     const multiDayRows = processMultiDayEventsForWeek(
       multiDayEvents,
-      weekDates
+      weekDates,
     );
     const multiDayRowCount = multiDayRows.length;
 
-    // Calculate multi-day count per day
     const multiDayCountPerDay = {};
     weekDates.forEach((date) => {
       multiDayCountPerDay[date] = 0;
     });
-
     multiDayRows.forEach((row, rowIdx) => {
       row.forEach((item) => {
         for (let i = item.startIdx; i <= item.endIdx; i++) {
           multiDayCountPerDay[weekDates[i]] = Math.max(
             multiDayCountPerDay[weekDates[i]],
-            rowIdx + 1
+            rowIdx + 1,
           );
         }
       });
     });
 
-    // Render multi-day events layer
     let multiDayHtml = "";
     if (multiDayRowCount > 0) {
       multiDayRows.forEach((row) => {
@@ -261,32 +231,20 @@ async function renderCalendar() {
         row.forEach((item) => {
           const cellWidth = 100 / 7;
           const paddingPercent = 0.563;
-
           let leftPercent = item.startIdx * cellWidth;
           let rightPercent = (6 - item.endIdx) * cellWidth;
-
           if (item.isStart) leftPercent += paddingPercent;
           if (item.isEnd) rightPercent += paddingPercent;
-
           const text = item.isStart ? item.event.text : "";
-
-          rowHtml += `<div class="multi-day-bar ${item.event.color}" 
-            style="left: ${leftPercent}%; right: ${rightPercent}%;"
-            draggable="true"
-            data-type="event"
-            data-id="${item.event.id}"
-            data-date="${item.event.date}">${text}</div>`;
+          rowHtml += `<div class="multi-day-bar ${item.event.color}" style="left: ${leftPercent}%; right: ${rightPercent}%;" draggable="true" data-type="event" data-id="${item.event.id}" data-date="${item.event.date}">${text}</div>`;
         });
         rowHtml += "</div>";
         multiDayHtml += rowHtml;
       });
     }
 
-    if (multiDayHtml) {
-      html += `<div class="cal-week-wrapper">`;
-      html += `<div class="multi-day-layer">${multiDayHtml}</div>`;
-    }
-
+    if (multiDayHtml)
+      html += `<div class="cal-week-wrapper"><div class="multi-day-layer">${multiDayHtml}</div>`;
     html += `<div class="cal-week">`;
 
     week.forEach((day) => {
@@ -296,13 +254,11 @@ async function renderCalendar() {
       const maxShow = Math.max(0, 3 - dayMultiDayCount);
 
       let itemsHtml = "";
-
-      if (dayMultiDayCount > 0) {
+      if (dayMultiDayCount > 0)
         itemsHtml += `<div class="multi-day-spacer"></div>`;
-      }
 
       const events = [...dayData.events].sort((a, b) =>
-        (a.time || "").localeCompare(b.time || "")
+        (a.time || "").localeCompare(b.time || ""),
       );
       const todos = [...dayData.todos].sort((a, b) => {
         const p = { high: 0, medium: 1, low: 2 };
@@ -313,7 +269,6 @@ async function renderCalendar() {
         ...events.map((ev) => ({ ...ev, itemType: "event" })),
         ...todos.map((t) => ({ ...t, itemType: "todo" })),
       ];
-
       const showCount = Math.min(items.length, maxShow);
       items.slice(0, showCount).forEach((item) => {
         if (item.itemType === "event") {
@@ -324,52 +279,27 @@ async function renderCalendar() {
             item.priority === "high"
               ? '<span class="todo-priority-icon">!</span>'
               : "";
-          itemsHtml += `<div class="todo-bar ${
-            item.done ? "done" : ""
-          }" draggable="true" data-type="todo" data-date="${
-            day.dateKey
-          }" data-id="${item.id}">
-            <span class="todo-check">${
-              item.done ? "✔" : "○"
-            }</span>${priorityIcon}<span class="todo-bar-text">${
-            item.text
-          }</span>
-          </div>`;
+          itemsHtml += `<div class="todo-bar ${item.done ? "done" : ""}" draggable="true" data-type="todo" data-date="${day.dateKey}" data-id="${item.id}"><span class="todo-check">${item.done ? "✔" : "○"}</span>${priorityIcon}<span class="todo-bar-text">${item.text}</span></div>`;
         }
       });
 
-      if (items.length > maxShow) {
-        itemsHtml += `<div class="more-events" data-date="${day.dateKey}">${
-          items.length - maxShow
-        }개 더보기</div>`;
-      }
+      if (items.length > maxShow)
+        itemsHtml += `<div class="more-events" data-date="${day.dateKey}">${items.length - maxShow}개 더보기</div>`;
 
-      html += `
-        <div class="cal-day ${day.otherMonth ? "other-month" : ""} ${
-        isToday ? "today" : ""
-      }" data-date="${day.dateKey}">
-          <span class="day-number">${day.date}</span>
-          <div class="day-events">${itemsHtml}</div>
-        </div>
-      `;
+      html += `<div class="cal-day ${day.otherMonth ? "other-month" : ""} ${isToday ? "today" : ""}" data-date="${day.dateKey}"><span class="day-number">${day.date}</span><div class="day-events">${itemsHtml}</div></div>`;
     });
 
     html += `</div>`;
-
-    if (multiDayHtml) {
-      html += `</div>`;
-    }
+    if (multiDayHtml) html += `</div>`;
   });
 
   document.getElementById("calendarDays").innerHTML = html;
   bindCalendarEvents();
 }
 
-// ==================== Bind Events ====================
+// ==================== Bind Calendar Events ====================
 function bindCalendarEvents() {
-  // Day cell events
   document.querySelectorAll(".cal-day:not(.other-month)").forEach((day) => {
-    // Double click to add event
     day.addEventListener("dblclick", (e) => {
       if (
         e.target.closest(".event-bar") ||
@@ -383,18 +313,15 @@ function bindCalendarEvents() {
       openAddEventModal();
     });
 
-    // Drag over
     day.addEventListener("dragover", (e) => {
       e.preventDefault();
       if (
         !day.classList.contains("other-month") &&
         day.dataset.date !== draggedItemDate
-      ) {
+      )
         day.classList.add("drag-over");
-      }
     });
 
-    // Drag leave
     day.addEventListener("dragleave", (e) => {
       const rect = day.getBoundingClientRect();
       if (
@@ -402,12 +329,10 @@ function bindCalendarEvents() {
         e.clientX > rect.right ||
         e.clientY < rect.top ||
         e.clientY > rect.bottom
-      ) {
+      )
         day.classList.remove("drag-over");
-      }
     });
 
-    // Drop
     day.addEventListener("drop", async (e) => {
       e.preventDefault();
       day.classList.remove("drag-over");
@@ -422,13 +347,11 @@ function bindCalendarEvents() {
           const oldStart = new Date(event.date + "T00:00:00");
           const oldEnd = new Date(event.endDate + "T00:00:00");
           const duration = Math.round(
-            (oldEnd - oldStart) / (1000 * 60 * 60 * 24)
+            (oldEnd - oldStart) / (1000 * 60 * 60 * 24),
           );
-
           const newStart = new Date(newDate + "T00:00:00");
           const newEnd = new Date(newStart);
           newEnd.setDate(newEnd.getDate() + duration);
-
           await EventsDB.update(draggedItemId, {
             date: newDate,
             endDate: formatDateKey(newEnd),
@@ -451,13 +374,12 @@ function bindCalendarEvents() {
   // Multi-day bar events
   document.querySelectorAll(".multi-day-bar").forEach((bar) => {
     bar.addEventListener("dragstart", (e) => {
-      draggedItemId = Number(bar.dataset.id);
+      draggedItemId = bar.dataset.id;
       draggedItemDate = bar.dataset.date;
       draggedItemType = "event";
       bar.classList.add("dragging");
       e.dataTransfer.effectAllowed = "move";
     });
-
     bar.addEventListener("dragend", () => {
       bar.classList.remove("dragging");
       draggedItemId = null;
@@ -467,7 +389,6 @@ function bindCalendarEvents() {
         .querySelectorAll(".cal-day.drag-over")
         .forEach((d) => d.classList.remove("drag-over"));
     });
-
     bar.onclick = (e) => {
       e.stopPropagation();
       openViewEventsModal(bar.dataset.date);
@@ -477,13 +398,12 @@ function bindCalendarEvents() {
   // Event bar events
   document.querySelectorAll(".event-bar").forEach((bar) => {
     bar.addEventListener("dragstart", (e) => {
-      draggedItemId = Number(bar.dataset.id);
+      draggedItemId = bar.dataset.id;
       draggedItemDate = bar.dataset.date;
       draggedItemType = "event";
       bar.classList.add("dragging");
       e.dataTransfer.effectAllowed = "move";
     });
-
     bar.addEventListener("dragend", () => {
       bar.classList.remove("dragging");
       draggedItemId = null;
@@ -493,7 +413,6 @@ function bindCalendarEvents() {
         .querySelectorAll(".cal-day.drag-over")
         .forEach((d) => d.classList.remove("drag-over"));
     });
-
     bar.onclick = (e) => {
       e.stopPropagation();
       openViewEventsModal(bar.dataset.date);
@@ -503,13 +422,12 @@ function bindCalendarEvents() {
   // Todo bar events
   document.querySelectorAll(".todo-bar").forEach((bar) => {
     bar.addEventListener("dragstart", (e) => {
-      draggedItemId = Number(bar.dataset.id);
+      draggedItemId = bar.dataset.id;
       draggedItemDate = bar.dataset.date;
       draggedItemType = "todo";
       bar.classList.add("dragging");
       e.dataTransfer.effectAllowed = "move";
     });
-
     bar.addEventListener("dragend", () => {
       bar.classList.remove("dragging");
       draggedItemId = null;
@@ -524,7 +442,7 @@ function bindCalendarEvents() {
     if (check) {
       check.onclick = async (e) => {
         e.stopPropagation();
-        await TodosDB.toggle(Number(bar.dataset.id));
+        await TodosDB.toggle(bar.dataset.id);
         await renderCalendar();
         await renderCalendarList();
         await renderTodayTodos();
@@ -532,7 +450,6 @@ function bindCalendarEvents() {
         if (typeof renderTodayPage === "function") await renderTodayPage();
       };
     }
-
     bar.onclick = (e) => {
       if (e.target.classList.contains("todo-check")) return;
       e.stopPropagation();
@@ -540,7 +457,6 @@ function bindCalendarEvents() {
     };
   });
 
-  // More events link
   document.querySelectorAll(".more-events").forEach((more) => {
     more.onclick = (e) => {
       e.stopPropagation();
@@ -596,9 +512,8 @@ function initEventModals() {
 
 function openAddEventModal() {
   const dateKey = formatDateKey(selectedDate);
-  document.getElementById("addEventTitle").textContent = `${
-    selectedDate.getMonth() + 1
-  }월 ${selectedDate.getDate()}일 일정 추가`;
+  document.getElementById("addEventTitle").textContent =
+    `${selectedDate.getMonth() + 1}월 ${selectedDate.getDate()}일 일정 추가`;
   document.getElementById("eventTitleInput").value = "";
   document.getElementById("eventTimeInput").value = "";
   document.getElementById("eventAllDayCheckbox").checked = false;
@@ -606,7 +521,6 @@ function openAddEventModal() {
   document.getElementById("eventTimeRow").style.display = "flex";
   document.getElementById("eventEndDateRow").style.display = "none";
   document.getElementById("eventEndDateInput").min = dateKey;
-
   selectedEventColor = "red";
   document
     .querySelectorAll("#addEventModal .color-option")
@@ -629,12 +543,9 @@ async function saveEvent() {
   const allDay = document.getElementById("eventAllDayCheckbox").checked;
   const dateKey = formatDateKey(selectedDate);
   let endDate = null;
-
   if (allDay) {
     const endDateValue = document.getElementById("eventEndDateInput").value;
-    if (endDateValue && endDateValue > dateKey) {
-      endDate = endDateValue;
-    }
+    if (endDateValue && endDateValue > dateKey) endDate = endDateValue;
   }
 
   await EventsDB.add({
@@ -658,7 +569,6 @@ async function openViewEventsModal(dateKey) {
   const [y, m, d] = dateKey.split("-").map(Number);
   document.getElementById("viewEventsTitle").textContent = `${m}월 ${d}일`;
 
-  // Store current date for refresh after edit
   const viewModal = document.getElementById("viewEventsModal");
   viewModal.dataset.currentDate = dateKey;
 
@@ -683,7 +593,6 @@ async function openViewEventsModal(dateKey) {
   });
 
   let html = "";
-
   if (sortedEvents.length > 0) {
     html += `<div class="view-section-title">일정</div>`;
     html += sortedEvents
@@ -693,14 +602,7 @@ async function openViewEventsModal(dateKey) {
           ev.endDate && ev.endDate !== ev.date
             ? ` (${formatDateRange(ev.date, ev.endDate)})`
             : "";
-        return `
-        <div class="event-list-item">
-          <div class="event-color-dot" style="background: var(--${ev.color})"></div>
-          <span class="event-list-time">${timeDisplay}</span>
-          <span class="event-list-text event-text-clickable" data-id="${ev.id}">${ev.text}${dateRange}</span>
-          <button class="event-list-delete" data-type="event" data-date="${dateKey}" data-id="${ev.id}">✕</button>
-        </div>
-      `;
+        return `<div class="event-list-item"><div class="event-color-dot" style="background: var(--${ev.color})"></div><span class="event-list-time">${timeDisplay}</span><span class="event-list-text event-text-clickable" data-id="${ev.id}">${ev.text}${dateRange}</span><button class="event-list-delete" data-type="event" data-date="${dateKey}" data-id="${ev.id}">✕</button></div>`;
       })
       .join("");
   }
@@ -709,37 +611,21 @@ async function openViewEventsModal(dateKey) {
     html += `<div class="view-section-title" style="margin-top: 16px;">할 일</div>`;
     html += sortedTodos
       .map(
-        (t) => `
-      <div class="event-list-item todo-list-item ${t.done ? "completed" : ""}">
-        <div class="todo-list-checkbox ${t.done ? "checked" : ""}" data-id="${
-          t.id
-        }"></div>
-        <span class="event-list-text todo-text-clickable" data-id="${t.id}">${
-          t.text
-        }</span>
-        <span class="todo-priority ${t.priority}">${t.priority}</span>
-        <button class="event-list-delete" data-type="todo" data-date="${dateKey}" data-id="${
-          t.id
-        }">✕</button>
-      </div>
-    `
+        (t) =>
+          `<div class="event-list-item todo-list-item ${t.done ? "completed" : ""}"><div class="todo-list-checkbox ${t.done ? "checked" : ""}" data-id="${t.id}"></div><span class="event-list-text todo-text-clickable" data-id="${t.id}">${t.text}</span><span class="todo-priority ${t.priority}">${t.priority}</span><button class="event-list-delete" data-type="todo" data-date="${dateKey}" data-id="${t.id}">✕</button></div>`,
       )
       .join("");
   }
 
-  if (!html) {
-    html = '<div class="empty-state">일정이 없습니다</div>';
-  }
-
+  if (!html) html = '<div class="empty-state">일정이 없습니다</div>';
   document.getElementById("viewEventsList").innerHTML = html;
 
   // Delete button events
   document.querySelectorAll(".event-list-delete").forEach((btn) => {
     btn.onclick = async () => {
-      if (btn.dataset.type === "event") {
-        await EventsDB.delete(Number(btn.dataset.id));
-      } else {
-        await TodosDB.delete(Number(btn.dataset.id));
+      if (btn.dataset.type === "event") await EventsDB.delete(btn.dataset.id);
+      else {
+        await TodosDB.delete(btn.dataset.id);
         await renderTodayTodos();
         await renderTodos();
       }
@@ -753,7 +639,7 @@ async function openViewEventsModal(dateKey) {
   // Todo checkbox events
   document.querySelectorAll(".todo-list-checkbox").forEach((cb) => {
     cb.onclick = async () => {
-      await TodosDB.toggle(Number(cb.dataset.id));
+      await TodosDB.toggle(cb.dataset.id);
       await renderCalendar();
       await renderCalendarList();
       await renderTodayTodos();
@@ -766,17 +652,14 @@ async function openViewEventsModal(dateKey) {
   // Todo text click to edit
   document.querySelectorAll(".todo-text-clickable").forEach((text) => {
     text.onclick = () => {
-      if (typeof openEditTodoModal === "function") {
-        openEditTodoModal(Number(text.dataset.id));
-      }
+      if (typeof openEditTodoModal === "function")
+        openEditTodoModal(text.dataset.id);
     };
   });
 
   // Event text click to edit
   document.querySelectorAll(".event-text-clickable").forEach((text) => {
-    text.onclick = () => {
-      openEditEventModal(Number(text.dataset.id));
-    };
+    text.onclick = () => openEditEventModal(text.dataset.id);
   });
 
   viewModal.classList.add("active");
@@ -814,13 +697,11 @@ function initEditEventModal() {
   modal.onclick = (e) => {
     if (e.target === modal) closeEditEventModal();
   };
-
   document.getElementById("saveEditEvent").onclick = saveEditEvent;
   document.getElementById("editEventTitleInput").onkeypress = (e) => {
     if (e.key === "Enter") saveEditEvent();
   };
 
-  // Color options
   document
     .querySelectorAll("#editEventColorOptions .color-option")
     .forEach((opt) => {
@@ -849,7 +730,6 @@ async function openEditEventModal(eventId) {
   document.getElementById("editEventEndDateInput").value = event.endDate || "";
   document.getElementById("editEventEndDateInput").min = event.date;
 
-  // Show/hide time and end date rows
   if (event.allDay) {
     document.getElementById("editEventTimeRow").style.display = "none";
     document.getElementById("editEventEndDateRow").style.display = "flex";
@@ -858,7 +738,6 @@ async function openEditEventModal(eventId) {
     document.getElementById("editEventEndDateRow").style.display = "none";
   }
 
-  // Update color selection
   document
     .querySelectorAll("#editEventColorOptions .color-option")
     .forEach((c) => {
@@ -876,10 +755,8 @@ function closeEditEventModal() {
 
 async function saveEditEvent() {
   if (!editingEventId) return;
-
   const text = document.getElementById("editEventTitleInput").value.trim();
   if (!text) return;
-
   const date = document.getElementById("editEventDateInput").value;
   if (!date) return;
 
@@ -887,13 +764,10 @@ async function saveEditEvent() {
   const time = allDay
     ? null
     : document.getElementById("editEventTimeInput").value || null;
-
   let endDate = null;
   if (allDay) {
     const endDateValue = document.getElementById("editEventEndDateInput").value;
-    if (endDateValue && endDateValue > date) {
-      endDate = endDateValue;
-    }
+    if (endDateValue && endDateValue > date) endDate = endDateValue;
   }
 
   await EventsDB.update(editingEventId, {
@@ -904,21 +778,18 @@ async function saveEditEvent() {
     allDay,
     color: editEventColor,
   });
-
   closeEditEventModal();
-
-  // Refresh all views
   await renderCalendar();
   await renderCalendarList();
   if (typeof renderTodayPage === "function") await renderTodayPage();
 
-  // Refresh viewEventsModal if it's open
   const viewModal = document.getElementById("viewEventsModal");
-  if (viewModal && viewModal.classList.contains("active")) {
-    const currentDate = viewModal.dataset.currentDate;
-    if (currentDate) {
-      await openViewEventsModal(currentDate);
-    }
+  if (
+    viewModal &&
+    viewModal.classList.contains("active") &&
+    viewModal.dataset.currentDate
+  ) {
+    await openViewEventsModal(viewModal.dataset.currentDate);
   }
 }
 
@@ -943,17 +814,14 @@ async function renderCalendarList() {
   const allTodos = await TodosDB.getAll();
 
   const dataByDate = {};
-
   allEvents.forEach((ev) => {
     const dates = ev.endDate ? getDatesBetween(ev.date, ev.endDate) : [ev.date];
     dates.forEach((date) => {
       if (!dataByDate[date]) dataByDate[date] = { events: [], todos: [] };
-      if (!dataByDate[date].events.find((e) => e.id === ev.id)) {
+      if (!dataByDate[date].events.find((e) => e.id === ev.id))
         dataByDate[date].events.push(ev);
-      }
     });
   });
-
   allTodos.forEach((t) => {
     if (t.date) {
       if (!dataByDate[t.date]) dataByDate[t.date] = { events: [], todos: [] };
@@ -962,11 +830,8 @@ async function renderCalendarList() {
   });
 
   let html = "";
-
   for (let d = 1; d <= lastDate; d++) {
-    const dateKey = `${year}-${String(month + 1).padStart(2, "0")}-${String(
-      d
-    ).padStart(2, "0")}`;
+    const dateKey = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
     const date = new Date(year, month, d);
     const dayOfWeek = date.getDay();
     const isToday =
@@ -992,61 +857,20 @@ async function renderCalendarList() {
     if (dayOfWeek === 6) dayClass += " is-saturday";
 
     let itemsHtml = "";
-
     sortedEvents.forEach((ev) => {
       const timeDisplay = ev.allDay ? "종일" : ev.time || "";
       const isMultiDay = ev.endDate && ev.endDate !== ev.date;
       const dateRange = isMultiDay
         ? ` (${formatDateRange(ev.date, ev.endDate)})`
         : "";
-
-      itemsHtml += `
-        <div class="day-card-event ${ev.color}" data-id="${ev.id}" data-date="${
-        ev.date
-      }">
-          ${
-            timeDisplay
-              ? `<span class="day-card-event-time">${timeDisplay}</span>`
-              : ""
-          }
-          <span class="day-card-event-text" data-id="${ev.id}">${
-        ev.text
-      }${dateRange}</span>
-        </div>
-      `;
+      itemsHtml += `<div class="day-card-event ${ev.color}" data-id="${ev.id}" data-date="${ev.date}">${timeDisplay ? `<span class="day-card-event-time">${timeDisplay}</span>` : ""}<span class="day-card-event-text" data-id="${ev.id}">${ev.text}${dateRange}</span></div>`;
     });
 
     sortedTodos.forEach((t) => {
-      itemsHtml += `
-        <div class="day-card-todo ${t.done ? "done" : ""}" data-id="${
-        t.id
-      }" data-date="${dateKey}">
-          <span class="day-card-todo-check" data-id="${t.id}">${
-        t.done ? "✔" : "○"
-      }</span>
-          <span class="day-card-todo-text" data-id="${t.id}">${t.text}</span>
-          <span class="todo-priority ${t.priority}">${t.priority}</span>
-        </div>
-      `;
+      itemsHtml += `<div class="day-card-todo ${t.done ? "done" : ""}" data-id="${t.id}" data-date="${dateKey}"><span class="day-card-todo-check" data-id="${t.id}">${t.done ? "✔" : "○"}</span><span class="day-card-todo-text" data-id="${t.id}">${t.text}</span><span class="todo-priority ${t.priority}">${t.priority}</span></div>`;
     });
 
-    html += `
-      <div class="${dayClass}" data-date="${dateKey}">
-        <div class="day-card-header">
-          <span class="day-card-date">${d}</span>
-          <span class="day-card-weekday">${weekdays[dayOfWeek]}</span>
-          ${isToday ? '<span class="day-card-today-badge">오늘</span>' : ""}
-        </div>
-        <div class="day-card-body">
-          <div class="day-card-events">
-            ${itemsHtml || '<div class="day-card-empty">일정 없음</div>'}
-          </div>
-          <div class="day-card-add">
-            <button class="day-card-add-btn" data-date="${dateKey}">+ 추가</button>
-          </div>
-        </div>
-      </div>
-    `;
+    html += `<div class="${dayClass}" data-date="${dateKey}"><div class="day-card-header"><span class="day-card-date">${d}</span><span class="day-card-weekday">${weekdays[dayOfWeek]}</span>${isToday ? '<span class="day-card-today-badge">오늘</span>' : ""}</div><div class="day-card-body"><div class="day-card-events">${itemsHtml || '<div class="day-card-empty">일정 없음</div>'}</div><div class="day-card-add"><button class="day-card-add-btn" data-date="${dateKey}">+ 추가</button></div></div></div>`;
   }
 
   container.innerHTML = html;
@@ -1054,7 +878,6 @@ async function renderCalendarList() {
 }
 
 function bindCalendarListEvents() {
-  // Add button
   document.querySelectorAll(".day-card-add-btn").forEach((btn) => {
     btn.onclick = () => {
       const [y, m, d] = btn.dataset.date.split("-").map(Number);
@@ -1063,38 +886,32 @@ function bindCalendarListEvents() {
     };
   });
 
-  // Event click - open edit modal
   document.querySelectorAll(".day-card-event").forEach((ev) => {
     ev.onclick = (e) => {
-      // Click on event text to edit
       if (e.target.classList.contains("day-card-event-text")) {
-        openEditEventModal(Number(e.target.dataset.id));
+        openEditEventModal(e.target.dataset.id);
         return;
       }
       openViewEventsModal(ev.dataset.date);
     };
   });
 
-  // Todo click
   document.querySelectorAll(".day-card-todo").forEach((t) => {
     t.onclick = (e) => {
       if (e.target.classList.contains("day-card-todo-check")) return;
-      // Click on todo text to edit
       if (e.target.classList.contains("day-card-todo-text")) {
-        if (typeof openEditTodoModal === "function") {
-          openEditTodoModal(Number(e.target.dataset.id));
-        }
+        if (typeof openEditTodoModal === "function")
+          openEditTodoModal(e.target.dataset.id);
         return;
       }
       openViewEventsModal(t.dataset.date);
     };
   });
 
-  // Todo checkbox
   document.querySelectorAll(".day-card-todo-check").forEach((check) => {
     check.onclick = async (e) => {
       e.stopPropagation();
-      await TodosDB.toggle(Number(check.dataset.id));
+      await TodosDB.toggle(check.dataset.id);
       await renderCalendar();
       await renderCalendarList();
       await renderTodayTodos();
