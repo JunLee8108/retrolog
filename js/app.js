@@ -31,6 +31,9 @@ async function initializeApp() {
 
   // Apply saved start page
   await applyStartPage();
+
+  // 모든 초기화 완료 후 로딩 화면 숨김
+  hideLoadingScreen();
 }
 
 // ==================== Start Page ====================

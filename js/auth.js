@@ -3,7 +3,6 @@ let currentUser = null;
 
 // ==================== Initialize Auth ====================
 async function initAuth() {
-  // Check existing session
   const {
     data: { session },
   } = await supabaseClient.auth.getSession();
@@ -11,7 +10,6 @@ async function initAuth() {
   if (session) {
     currentUser = session.user;
     await loadUserProfile();
-    hideLoadingScreen();
     hideAuthScreen();
     return true;
   }
