@@ -20,6 +20,13 @@ async function initAuth() {
 }
 
 // ==================== Loading Screen ====================
+function showLoadingScreen() {
+  const loadingScreen = document.getElementById("loadingScreen");
+  if (loadingScreen) {
+    loadingScreen.classList.remove("hidden");
+  }
+}
+
 function hideLoadingScreen() {
   const loadingScreen = document.getElementById("loadingScreen");
   if (loadingScreen) {
@@ -35,6 +42,7 @@ function setupAuthListener() {
     if (event === "SIGNED_IN" && session) {
       currentUser = session.user;
       await loadUserProfile();
+      showLoadingScreen();
       hideAuthScreen();
       await initializeApp();
     } else if (event === "SIGNED_OUT") {
