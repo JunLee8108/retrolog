@@ -11,12 +11,22 @@ async function initAuth() {
   if (session) {
     currentUser = session.user;
     await loadUserProfile();
+    hideLoadingScreen();
     hideAuthScreen();
     return true;
   }
 
+  hideLoadingScreen();
   showAuthScreen();
   return false;
+}
+
+// ==================== Loading Screen ====================
+function hideLoadingScreen() {
+  const loadingScreen = document.getElementById("loadingScreen");
+  if (loadingScreen) {
+    loadingScreen.classList.add("hidden");
+  }
 }
 
 // ==================== Auth State Change Listener ====================
